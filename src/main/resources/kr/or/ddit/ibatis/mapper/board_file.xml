@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="board_file">
+<typeAlias alias="Board_fileVO" type="kr.or.ddit.vo.Board_fileVO"/>
+<insert id="insertFile" parameterClass="board_fileVO">
+		<selectKey keyProperty="bofile_num">
+			SELECT
+			BOARD_FILE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO BOARD_FILE(BOFILE_NUM,
+		BO_NUM,
+		BOFILE_NAME,
+		BOFILE_SAVE_NAME,
+		BOFILE_TYPE,
+		BOFILE_SIZE,
+		BOFILE_DATE,
+		BOFILE_STATUS
+		)
+		VALUES(#bofile_num#,
+		#bo_num#,
+		#bofile_name#,
+		#bofile_save_name#,
+		#bofile_type#,
+		#bofile_size#,
+		SYSDATE,
+		'y')
+	</insert>
+	<select id="FileInfo" parameterClass="map"
+		resultClass="board_fileVO">
+		SELECT *
+		FROM BOARD_FILE
+		WHERE BO_NUM = #bo_num#
+		AND BOFILE_STATUS = 'y'
+	</select>
+	<update id="deleteFile" parameterClass="map">
+		UPDATE
+		BOARD_FILE
+		SET BOFILE_STATUS = 'n'
+		WHERE BOFILE_NUM =
+		#bofile_num#
+	</update>
+</sqlMap>

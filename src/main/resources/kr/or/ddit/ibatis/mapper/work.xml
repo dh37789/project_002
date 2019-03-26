@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="work">
+	<typeAlias alias="workVO" type="kr.or.ddit.vo.WorkVO"/>
+	<sql id="workSql">
+		SELECT * FROM WORK
+	</sql>
+	
+	
+	<sql id="searchCondition">
+		<!-- AND는 prepend="AND" 쿼리의 AND를 없애준다.(자동으로 붙여준다.) -->
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="title">
+						WORK_TITLE LIKE '%'||#search_data#||'%'
+					OR 	WORK_CHAR_ID LIKE '%'||#search_data#||'%'
+					OR 	WORK_PRIORITY LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="order">
+						WORK_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="order">
+						WORK_CHAR_ID LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="rank">
+					 	WORK_PRIORITY LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<select id="totalCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM WORK
+		WHERE work_proj_num = #work_proj_num#
+		AND WORK_STATUS = 'y'
+		<include refid="searchCondition"/>
+	</select>
+	
+	<select id="boardList" parameterClass="map" resultClass="workVO">
+		SELECT B.*
+		FROM(SELECT ROWNUM rnum, A.*
+        FROM(<include refid="workSql"/>
+		WHERE work_proj_num = #work_proj_num#
+		AND WORK_STATUS = 'y'
+		<include refid="searchCondition"/>
+		ORDER BY WORK_NUM ASC) A) B
+		<![CDATA[
+		WHERE B.RNUM <= #start#
+		  AND B.RNUM >= #end#
+	   ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="chartList" parameterClass="map" resultClass="workVO">
+		SELECT ROWNUM rnum, A.*
+        FROM(<include refid="workSql"/>
+		WHERE work_proj_num = #work_proj_num#
+		AND WORK_STATUS = 'y'
+		ORDER BY WORK_NUM ASC) A
+		ORDER BY RNUM DESC
+	</select>
+	
+	<select id="orderList" parameterClass="map" resultClass="workVO">
+		SELECT B.*
+        FROM(SELECT ROWNUM rnum, A.*
+        FROM(<include refid="workSql"/>
+		WHERE work_proj_num = #work_proj_num#
+		AND WORK_STATUS = 'y'
+		ORDER BY WORK_NUM ASC) A
+		ORDER BY RNUM DESC) B
+		<dynamic>
+		<isNotEmpty property="work_num">
+        WHERE WORK_NUM != #work_num#
+		</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<insert id="insertWork" parameterClass="workVO">
+	<selectKey keyProperty="work_num">
+	SELECT WORK_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+	<dynamic>
+	<isEmpty property="work_group">
+	INSERT INTO WORK(WORK_NUM, MEM_ID, WORK_CHAR_ID, WORK_PROJ_NUM, WORK_PRIORITY, WORK_TITLE, WORK_PROGRESS,
+					 WORK_TIME, WORK_DATE, WORK_START, WORK_END, WORK_CONTENT, WORK_ORDER, WORK_GROUP)
+			  VALUES(#work_num#, #mem_id#, #work_char_id#, #work_proj_num#, #work_priority#, #work_title#,
+			  		 #work_progress#, #work_time#, SYSDATE, #work_start#, #work_end#, #work_content#, #work_order#, #work_num# )
+	</isEmpty>
+	<isNotEmpty property="work_group">
+	INSERT INTO WORK(WORK_NUM, MEM_ID, WORK_CHAR_ID, WORK_PROJ_NUM, WORK_PRIORITY, WORK_TITLE, WORK_PROGRESS,
+					 WORK_TIME, WORK_DATE, WORK_START, WORK_END, WORK_CONTENT, WORK_ORDER, WORK_GROUP)
+			  VALUES(#work_num#, #mem_id#, #work_char_id#, #work_proj_num#, #work_priority#, #work_title#,
+			  		 #work_progress#, #work_time#, SYSDATE, #work_start#, #work_end#, #work_content#, #work_order#, #work_group# )
+	</isNotEmpty>
+	</dynamic>
+	</insert>
+	
+	<select id="boardInfo" parameterClass="map" resultClass="workVO">
+		<include refid="workSql"/>
+		WHERE WORK_NUM = #work_num#
+	</select>
+	
+	<select id="orderInfo" parameterClass="map" resultClass="workVO">
+		SELECT B.*
+        FROM(SELECT ROWNUM rnum, A.*
+        FROM(<include refid="workSql"/>
+		WHERE WORK_PROJ_NUM = #work_proj_num#
+		AND WORK_STATUS = 'y'
+		ORDER BY WORK_NUM ASC) A
+        ORDER BY RNUM ASC) B
+        WHERE RNUM = #work_order#
+	</select>
+	
+	<update id="deleteWork" parameterClass="map">
+		UPDATE WORK
+		SET WORK_STATUS = 'n'
+		WHERE WORK_NUM = #work_num#
+	</update>
+	
+	<update id="updateWork" parameterClass="workVO">
+		UPDATE WORK
+		SET WORK_CHAR_ID = #work_char_id#,
+			WORK_PRIORITY = #work_priority#,
+			WORK_TITLE = #work_title#,
+			WORK_PROGRESS = #work_progress#,
+			WORK_TIME = #work_time#,
+			WORK_DATE = SYSDATE,
+			WORK_START = #work_start#,
+			WORK_END = #work_end#,
+			WORK_CONTENT = #work_content#,
+			WORK_ORDER = #work_order#,   
+			WORK_GROUP = #work_group#       
+		WHERE WORK_NUM = #work_num#
+	</update>
+	
+	<select id="workSchedule" parameterClass="map" resultClass="workVO">
+		SELECT W.WORK_TITLE, W.WORK_START, W.WORK_END
+            FROM WORK W, PROJECT P
+            WHERE W.WORK_PROJ_NUM = P.PR_NUM
+            AND W.WORK_STATUS = 'y'
+            AND P.PR_NUM = #pr_num#
+	</select>
+</sqlMap>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="qna" >
+<typeAlias alias="QnAVO" type="kr.or.ddit.vo.QnaVO"/>
+	<resultMap class="qnaVO" id="qnaMap">
+		<result property="qa_num" column="qa_num"/>
+		<result property="qa_title" column="qa_title"/>
+		<result property="mem_id" column="mem_id"/>
+		<result property="qa_pass" column="qa_pass"/>
+		<result property="qa_content" column="qa_content"/>
+		<result property="qa_hit" column="qa_hit"/>
+		<result property="qa_date" column="qa_date" />
+		<result property="qa_status" column="qa_status"/>
+		<result property="qa_group" column="qa_group"/>
+		<result property="qa_depth" column="qa_depth"/>
+	</resultMap>
+	
+	<sql id="selectAll">
+		SELECT *
+		  FROM QnA
+	</sql>
+	
+	<sql id="searchCondition">
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_keyword" open="(" close=") and (QA_STATUS = 'y' OR QA_STATUS = 'r' OR QA_STATUS = 'd')">
+				<isEqual property="search_keycode" compareValue="TOTAL">
+						QA_TITLE LIKE '%'||#search_keyword#||'%'
+					 OR QA_CONTENT LIKE '%'||#search_keyword#||'%'
+					 OR	MEM_ID LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="TITLE">
+						QA_TITLE LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="CONTENT">
+					    QA_CONTENT LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="WRITER">
+					 	MEM_ID LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+			</isNotEmpty>
+			<isEmpty>
+			 QA_STATUS ='y'
+				OR QA_STATUS ='d'
+				OR QA_STATUS ='r'
+			</isEmpty>
+		</dynamic>
+	</sql>
+	
+	<select id="qnaList" resultClass="qnaVO" parameterClass="map">
+		SELECT B.*
+		FROM
+		(SELECT ROWNUM rnum, A.*
+		  FROM (<include refid="selectAll"/>
+		  		<include refid="searchCondition"/>
+		  		ORDER BY QA_GROUP,QA_DATE DESC,QA_DEPTH DESC) A
+		  		WHERE QA_STATUS = 'y'
+		  		OR QA_STATUS = 'd'
+		  		OR QA_STATUS = 'r'
+		  		) B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		  AND B.RNUM >= #endCount#
+		 ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="qnaView" resultMap="qnaMap" parameterClass="map">
+		SELECT *
+		  FROM qna
+		 WHERE QA_NUM = #qa_num#
+	</select>
+	
+	<insert id="insertQna" parameterClass="qnaVO">
+		<selectKey keyProperty="qa_num" resultClass="String">
+			SELECT QNA_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO 
+		qna(QA_NUM, QA_TITLE, MEM_ID, QA_PASS,  QA_CONTENT, QA_GROUP,QA_DATE)
+		VALUES(#qa_num#, #qa_title#, #mem_id#,  #qa_pass#, #qa_content#,#qa_num#,SYSDATE)
+	</insert>
+	
+	<update id="updateQna" parameterClass="qnaVO">
+		UPDATE QNA
+		   SET
+		   	   QA_TITLE = #qa_title#,
+		   	   QA_CONTENT = #qa_content#
+		 WHERE QA_NUM = #qa_num#
+	</update>
+	
+	<update id="deleteQna" parameterClass="String">
+		UPDATE QNA
+		   SET
+		   	   QA_STATUS = 'n'
+		 WHERE QA_NUM = #qa_num#
+	</update>
+
+	<update id="delQna" parameterClass="String">
+		UPDATE QNA
+		   SET
+		   	   QA_STATUS = 'n'
+		 WHERE QA_GROUP = #qa_num#
+	</update>
+	
+	<update id="qnaHit" parameterClass="map">
+		UPDATE QNA
+		   SET
+		   	   QA_HIT = qa_HIT+1
+		 WHERE QA_NUM = #qa_num#	
+	</update>
+	
+	<update id="qnaRe" parameterClass="String">
+		UPDATE QNA
+			SET
+				QA_STATUS ='r'
+			WHERE QA_NUM = #qa_group#
+	</update>
+
+	<update id="qnaReDe" parameterClass="String">
+		UPDATE QNA
+			SET
+				QA_STATUS ='d'
+			WHERE QA_NUM = #qa_group#
+	</update>
+	
+	<select id="totalCount" resultClass="int">
+		SELECT COUNT(*)
+		FROM QNA
+		 <include refid="searchCondition"/>
+	</select>
+		
+	<insert id="insertQnaReply" parameterClass="qnaVO">
+		<selectKey keyProperty="qa_num">
+			SELECT QNA_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+	INSERT INTO
+	qna(
+				QA_NUM, 
+				QA_TITLE, 
+				MEM_ID, 
+				QA_PASS, 
+				QA_CONTENT,
+				QA_GROUP, 
+				QA_DEPTH,
+				QA_DATE
+			)
+	  VALUES(
+	  			#qa_num#, 
+	  			#qa_title#, 
+	  			#mem_id#, 
+	  			#qa_pass#, 
+	  			#qa_content#, 	
+	  			#qa_group#, 
+	  			#qa_depth#,
+	  			SYSDATE
+	  		)
+	</insert>
+	
+	
+</sqlMap>

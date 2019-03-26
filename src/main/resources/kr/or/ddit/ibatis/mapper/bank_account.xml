@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="bank_account">
+	<typeAlias alias="bank_accountVO" type="kr.or.ddit.vo.Bank_accountVO"/>
+	<typeAlias alias="bank_joinVO" type="kr.or.ddit.vo.Bank_joinVO"/>
+
+	<select id="bankAccountInfo" parameterClass="map" resultClass="bank_joinVO">
+		 SELECT *
+	        FROM BANK B , BANK_ACCOUNT A
+	        WHERE A.AC_BANK = B.BANK_CODE
+	        AND A.AC_MEM = #ac_mem#
+	</select>
+	
+	<update id="updatebankAccount" parameterClass="bank_accountVO">
+		UPDATE BANK_ACCOUNT
+		   SET AC_ACCOUNT= #ac_account#
+		      ,AC_BANK = #ac_bank#
+		   	  ,AC_NAME = #ac_name#
+		WHERE AC_MEM = #ac_mem# 
+	</update>
+	
+	<insert id="insertbankAccount" parameterClass="bank_accountVO">
+		<selectKey keyProperty="ac_num">
+			SELECT BANK_ACCOUNT_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO BANK_ACCOUNT(AC_NUM, AC_ACCOUNT, AC_MEM, AC_BANK, AC_NAME)
+		VALUES(#ac_num#, #ac_account#, #ac_mem#, #ac_bank#, #ac_name#)					  
+	</insert>
+	
+	
+</sqlMap>

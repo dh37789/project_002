@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="message">
+	<typeAlias alias="messageVO" type="kr.or.ddit.vo.MessageVO"/>
+
+
+	<select id="totalCountTO" parameterClass="map" resultClass="int">
+		select count(*)
+		from message
+		WHERE MSG_TO=#mem_id#
+		and msg_status='y'
+		and msg_hit =0
+	</select>
+	
+	<select id="totalCountFROM" parameterClass="map" resultClass="int">
+		select count(*) 
+		from message
+		WHERE MSG_FROM=#mem_id#
+	</select>
+	
+	
+	<select id="messageTO" parameterClass="map" resultClass="messageVO">
+	select A.*
+	from(SELECT rownum rnum, MSG_NUM,MSG_FROM,MSG_TO,MSG_TITLE,MSG_CONTENT,MSG_DATE,MSG_STATUS,MSG_HIT
+	FROM MESSAGE
+	WHERE MSG_TO=#mem_id#
+	and msg_status='y'
+	) A
+	ORDER BY A.MSG_HIT 
+	</select>
+	<select id="messageFROM" parameterClass="map" resultClass="messageVO">
+	select A.*
+	from(	 SELECT rownum rnum, MSG_NUM,MSG_FROM,MSG_TO,MSG_TITLE,MSG_CONTENT,MSG_DATE,MSG_STATUS,MSG_HIT
+	        FROM MESSAGE
+	        WHERE MSG_FROM=#mem_id#) A
+	ORDER BY A.MSG_DATE DESC
+	</select>
+	
+	<select id="messageInfo" parameterClass="map" resultClass="messageVO">
+		 SELECT *
+	        FROM MESSAGE
+	        WHERE MSG_NUM=#msg_num#
+	</select>
+	
+	<update id="hitMessage" parameterClass="string">
+		UPDATE MESSAGE
+		   SET MSG_HIT = MSG_HIT + 1
+		WHERE MSG_NUM = #msg_num# 
+	</update>
+	
+	<update id="deleteMessage" parameterClass="string">
+		UPDATE MESSAGE
+		   SET MSG_STATUS = 'n'
+		WHERE MSG_NUM = #msg_num# 
+	</update>
+	
+	<insert id="insertMessage" parameterClass="map">
+		<selectKey keyProperty="msg_num" resultClass="String">
+			SELECT TOTAL_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO MESSAGE 
+		VALUES(#msg_num#, #from#, #to#, #title#, #content#,sysdate,'y',0)					  
+	</insert>
+	
+	
+</sqlMap>

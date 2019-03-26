@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="technique">
+	<typeAlias alias="techniqueVO" type="kr.or.ddit.vo.TechniqueVO"/>
+
+	<select id="techList" parameterClass="map" resultClass="techniqueVO">
+		SELECT * FROM TECHNIQUE
+			WHERE MEM_ID = #mem_id#
+			AND TECH_STATUS = 'y'
+		
+	</select>
+	
+	<update id="updateTech" parameterClass="techniqueVO">
+		UPDATE TECHNIQUE
+		   SET TECH_TYPE = #tech_type#
+		      ,TECH_FLUENT = #tech_fluent#
+		   	  ,TECH_PERIOD = #tech_period#
+		WHERE MEM_ID = #mem_id#
+		AND TECH_NUM = #tech_num# 
+	</update>
+	
+	<insert id="insertTech" parameterClass="techniqueVO">
+		<selectKey keyProperty="tech_num" resultClass="String">
+			SELECT TECHNIQUE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO TECHNIQUE(TECH_NUM, MEM_ID, TECH_TYPE, TECH_FLUENT, TECH_PERIOD)
+		VALUES(#tech_num#, #mem_id#, #tech_type#, #tech_fluent#, #tech_period#)					  
+	</insert>
+	
+	<update id="deleteTech" parameterClass="map">
+		UPDATE TECHNIQUE
+		   SET TECH_STATUS = 'n'
+		WHERE MEM_ID = #mem_id#
+		AND TECH_STATUS = 'w'
+		
+	</update>
+	
+	<update id="waitDeleteTech" parameterClass="map">
+		UPDATE TECHNIQUE
+		   SET TECH_STATUS = 'w'
+		WHERE MEM_ID = #mem_id#
+		AND TECH_NUM = #tech_num#
+	</update>
+	
+	<update id="calcenDeleteTech" parameterClass="map">
+		UPDATE TECHNIQUE
+		   SET TECH_STATUS = 'y'
+		WHERE MEM_ID = #mem_id#
+        AND TECH_STATUS = 'w'
+	</update>
+	
+	<select id="countTech" parameterClass="map" resultClass="int">
+		SELECT COUNT(*) FROM TECHNIQUE
+			WHERE MEM_ID = #mem_id#
+		AND TECH_NUM = #tech_num#
+	</select>	   
+	
+	<select id="techCheck" parameterClass="map" resultClass="techniqueVO">
+		SELECT * FROM TECHNIQUE
+		WHERE TECH_STATUS = 'y'
+			AND MEM_ID = #mem_id#
+	</select>
+	
+	<update id="updateRepre" parameterClass="map">
+		UPDATE TECHNIQUE
+		   SET TECH_REPRE = '0'
+		WHERE MEM_ID = #mem_id#
+		AND TECH_NUM = #tech_num#
+	</update>
+	
+	<update id="updateTotalRepre" parameterClass="map">
+		UPDATE TECHNIQUE
+		   SET TECH_REPRE = '1'
+		WHERE MEM_ID = #mem_id#
+	</update>
+	
+</sqlMap>

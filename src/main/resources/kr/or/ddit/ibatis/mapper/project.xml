@@ -1,0 +1,882 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="project">
+	<typeAlias alias="projectVO" type="kr.or.ddit.vo.ProjectVO"/>
+	
+	<resultMap class="projectVO" id="projectMap">
+		<result property="rnum" column="rnum"/>
+		<result property="pr_num" column="pr_num"/>
+		<result property="pr_cate_num" column="pr_cate_num"/>
+		<result property="pr_title" column="pr_title"/>
+		<result property="pr_ex_period" column="pr_ex_period"/>
+		<result property="pr_payment" column="pr_payment"/>
+		<result property="pr_content" column="pr_content"/>
+		<result property="pr_check" column="pr_check"/>
+		<result property="pr_date" column="pr_date"/>
+		<result property="pr_deadline" column="pr_deadline"/>
+		<result property="pr_add" column="pr_add" />
+		<result property="pr_start" column="pr_start" />
+		<result property="pr_end" column="pr_end" />
+		<result property="pr_support" column="pr_support"/>
+		<result property="client" column="client"/>
+		<result property="pr_status" column="pr_status"/>
+		<result property="pr_type" column="pr_type"/>
+		<result property="dday" column="dday"/>
+		<result property="techs" column="pr_num" select="project_tech.techList" />
+	</resultMap>
+	
+	
+	<select id="myProjectInfo" parameterClass="map" resultClass="projectVO">
+		SELECT * 
+		FROM PROJECT
+		WHERE PR_NUM = #pr_num#
+	</select>
+	
+	<select id="projectView" parameterClass="map" resultMap="projectMap">
+	SELECT ROWNUM RNUM,pr_num,pr_cate_num,pr_title,pr_ex_period,pr_payment,pr_content,pr_check,TO_CHAR(pr_date, 'YYYY/MM/DD') pr_date,pr_deadline,pr_add,TO_CHAR(pr_start, 'YYYY/MM/DD') pr_start,TO_CHAR(pr_end, 'YYYY/MM/DD') pr_end,pr_support,client,pr_status,pr_type,TRUNC(pr_deadline - SYSDATE, 0) dday
+	FROM PROJECT
+	where pr_num = #pr_num#
+	</select>
+	
+	
+	<select id="projectList" parameterClass="map" resultMap="projectMap">
+	SELECT B.*
+	FROM(SELECT ROWNUM RNUM, A.*
+	FROM (SELECT pr_num,pr_check,pr_cate_num,pr_title,pr_ex_period,pr_payment,pr_content,TO_CHAR(pr_date, 'YYYY/MM/DD') pr_date,TO_CHAR(pr_deadline, 'YYYY/MM/DD') pr_deadline,pr_add,TO_CHAR(pr_start, 'YYYY/MM/DD') pr_start,TO_CHAR(pr_end, 'YYYY/MM/DD') pr_end,pr_support,client,pr_status,pr_type,TRUNC(pr_deadline - SYSDATE, 0) dday
+		FROM PROJECT P LEFT OUTER JOIN INTEREST_PROJECT I ON(P.PR_NUM = I.INPR_PROJECT AND INPR_FREE = #interest_member#)
+		where pr_status='2'
+		<dynamic>
+			<isNotEmpty property="search_keyword" prepend="and">
+				PR_TITLE LIKE '%'||#search_keyword#||'%'
+				OR PR_CONTENT LIKE '%'||#search_keyword#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="interest_member" prepend="and">
+				inpr_free=#interest_member#
+				and pr_num=inpr_project
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY P.PR_NUM ASC
+		) A )B
+	<![CDATA[
+	WHERE B.RNUM <= #startCount#
+	AND B.RNUM >=#endCount#
+	]]>
+	ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="totalCount" resultClass="int">
+	select count(*)
+	from project
+	where pr_status='2'
+	
+	</select>
+	<select id="countProject" resultClass="int" parameterClass="map">
+	select count(*)
+	FROM PROJECT P LEFT OUTER JOIN INTEREST_PROJECT I ON(P.PR_NUM = I.INPR_PROJECT AND INPR_FREE = #interest_member#)
+	where pr_status='2'
+	<dynamic>
+			<isNotEmpty property="search_keyword" prepend="and">
+				PR_TITLE LIKE '%'||#search_keyword#||'%'
+				OR PR_CONTENT LIKE '%'||#search_keyword#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="interest_member" prepend="and">
+				inpr_free=#interest_member#
+				and pr_num=inpr_project
+			</isNotEmpty>
+	</dynamic>
+	
+	</select>
+	
+	<select id="readyList" parameterClass="map" resultClass="projectVO">
+		SELECT ROWNUM rnum, A.*
+		FROM(SELECT * 
+		FROM PROJECT
+		WHERE PR_STATUS = 3
+		AND CLIENT = #client#)A
+		order by pr_num desc
+	</select>
+	
+	
+	<select id="stProjectList" parameterClass="map" resultMap="projectMap">
+	SELECT B.*
+	FROM(SELECT ROWNUM RNUM, A.*
+	FROM (SELECT pr_num,pr_cate_num,pr_check,pr_title,pr_ex_period,pr_payment,pr_content,TO_CHAR(pr_date, 'YYYY/MM/DD') pr_date,pr_deadline,pr_add,TO_CHAR(pr_start, 'YYYY/MM/DD') pr_start,TO_CHAR(pr_end, 'YYYY/MM/DD') pr_end,pr_support,client,pr_status,pr_type,TRUNC(pr_deadline - SYSDATE, 0) dday
+		FROM PROJECT
+		where pr_status='1'
+		<dynamic>
+			<isNotEmpty property="search_keyword" prepend="and">
+				(PR_TITLE LIKE '%'||#search_keyword#||'%'
+				OR PR_CONTENT LIKE '%'||#search_keyword#||'%')
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY PR_NUM ASC
+		) A )B
+	<![CDATA[
+	WHERE B.RNUM <= #startCount#
+	AND B.RNUM >=#endCount#
+	]]>
+	ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="stProjectView" parameterClass="map" resultMap="projectMap">
+	SELECT ROWNUM RNUM,pr_num,pr_cate_num,pr_title,pr_check,pr_ex_period,pr_payment,pr_content,TO_CHAR(pr_date, 'YYYY/MM/DD') pr_date,pr_deadline,pr_add,TO_CHAR(pr_start, 'YYYY/MM/DD') pr_start,TO_CHAR(pr_end, 'YYYY/MM/DD') pr_end,pr_support,client,pr_status,pr_type,TRUNC(pr_deadline - SYSDATE, 0) dday
+	FROM PROJECT
+	where pr_num = #pr_num#
+	</select>
+	
+	<update id="accProject">
+	UPDATE PROJECT
+	SET pr_status = '2'
+	WHERE pr_num=#pr_num#
+	</update>
+	
+	<update id="refuProject">
+	UPDATE PROJECT
+	SET pr_status = '6'
+	WHERE pr_num=#pr_num#
+	</update>
+	
+	<select id="countPro" resultClass="int" parameterClass="map">
+   	SELECT COUNT(*)
+   	FROM PROJECT
+   	WHERE pr_status = '1' 
+      <dynamic>
+   		<isNotEmpty property="search_keyword" prepend="and">
+   		(PR_TITLE LIKE '%'||#search_keyword#||'%'
+   		OR PR_CONTENT LIKE '%'||#search_keyword#||'%')
+   		</isNotEmpty>
+   	  </dynamic>
+   </select>
+	
+	<select id="cntClientProject" parameterClass="string" resultClass="int">
+	select count(*)
+	from project
+	where client=#mem_id#
+	</select>
+	
+	<select id="cntApplyProject" parameterClass="string" resultClass="int" >
+	select count(*)
+	from CONSTRACT, project
+	where client=#mem_id#
+	and cons_proj_num=pr_num
+	</select>
+	
+	<update id="insertRefuse" parameterClass="map">
+	UPDATE PROJECT
+	SET	   PR_REF=#pr_ref#
+	WHERE  PR_NUM=#pr_num#
+	</update>
+	
+	<select id="regProjectList" parameterClass="map" resultClass="java.util.HashMap">
+	 	SELECT PR_NUM, CLIENT, PR_CONTENT, PR_TITLE, PR_DEADLINE, PR_START, PR_PAYMENT, TRUNC(pr_deadline - SYSDATE, 0) DDAY
+		FROM project
+		WHERE client = #client#
+		AND pr_status = '2'
+		ORDER BY PR_num desc
+	</select>
+	<select id="totalSales"  resultClass="java.util.HashMap">
+		select a.* ,b.* ,c.* ,d.* ,e.* 
+			from (select NVL(sum(pr_payment), 0) web from project where pr_check between '19/02/01' and '19/02/28' AND (pr_cate_num = 1 OR pr_cate_num = 10)) a,
+	     		 (select NVL(sum(pr_payment), 0) app from project where pr_check between '19/02/01' and '19/02/28' AND (pr_cate_num = 2 OR pr_cate_num = 11)) b,
+	     		 (select NVL(sum(pr_payment), 0) game from project where pr_check between '19/02/01' and '19/02/28' AND (pr_cate_num = 7 OR pr_cate_num = 19)) c,
+	     		 (select NVL(sum(pr_payment), 0) publishing from project where pr_check between '19/02/01' and '19/02/28' AND pr_cate_num = 4) d,
+	     		 (select NVL(sum(pr_payment), 0) etc from project where pr_check between '19/02/01' and '19/02/28' 
+	        		AND (pr_cate_num = 3 OR pr_cate_num = 5 OR pr_cate_num = 6  OR pr_cate_num = 8 OR pr_cate_num between 12 and 18 OR pr_cate_num = 9 OR pr_cate_num = 20 OR pr_cate_num = 21)) e
+	</select>
+	
+	<select id="pureSales" resultClass="java.util.HashMap">
+		select a.*,b.*,c.*,d.*,e.*
+			from (select NVL(sum(pr_payment), 0) *0.1 web from project where pr_check between '19/02/01' and '19/02/28' AND (pr_cate_num = 1 OR pr_cate_num = 10)) a,
+     			 (select NVL(sum(pr_payment), 0) *0.1 app from project where pr_check between '19/02/01' and '19/02/28' AND (pr_cate_num = 2 OR pr_cate_num = 11)) b,
+     			 (select NVL(sum(pr_payment), 0) *0.1 game from project where pr_check between '19/02/01' and '19/02/28' AND (pr_cate_num = 7 OR pr_cate_num = 19)) c,
+     			 (select NVL(sum(pr_payment), 0) *0.1 publishing from project where pr_check between '19/02/01' and '19/02/28' AND pr_cate_num = 4) d,
+     			 (select NVL(sum(pr_payment), 0) *0.1 etc from project where pr_check between '19/02/01' and '19/02/28' 
+          			AND (pr_cate_num = 3 OR pr_cate_num = 5 OR pr_cate_num = 6  OR pr_cate_num = 8 OR pr_cate_num between 12 and 18 OR pr_cate_num = 9 OR pr_cate_num = 20 OR pr_cate_num = 21)) e
+	</select>
+	
+	<select id="categoryList" resultClass="java.util.HashMap">
+		select a.*,b.*,c.*,d.*,e.*
+			from(select NVL(count(pr_cate_num), 0) web from project where (pr_cate_num = 1 OR pr_cate_num = 10) AND (pr_status = 4 OR pr_status = 5)) a,
+			    (select NVL(count(pr_cate_num), 0) app from project where (pr_cate_num = 2 OR pr_cate_num = 11) AND (pr_status = 4 OR pr_status = 5)) b,
+			    (select NVL(count(pr_cate_num), 0) publishing from project where pr_cate_num = 4 AND (pr_status = 4 OR pr_status = 5)) c,
+			    (select NVL(count(pr_cate_num), 0) game from project where (pr_cate_num = 7 OR pr_cate_num = 19) AND (pr_status = 4 OR pr_status = 5)) d,
+			    (select NVL(count(pr_cate_num), 0) etc from project where (pr_cate_num = 3 OR pr_cate_num = 5 OR pr_cate_num = 6  OR pr_cate_num = 8 OR pr_cate_num between 12 and 18 OR pr_cate_num = 9 OR pr_cate_num = 20 OR pr_cate_num = 21) 
+			    												AND (pr_status = 4 OR pr_status = 5)) e
+	</select>
+	
+	<select id="pjCondition" resultClass="java.util.HashMap">
+		select a.*,b.*,c.*,d.*,e.*
+			from (select NVL(sum(pr_status), 0) wait from project where pr_status = 1) a,
+			     (select NVL(sum(pr_status), 0) regi from project where pr_status = 2) b,
+			     (select NVL(sum(pr_status), 0) cont from project where pr_status = 3) c,
+			     (select NVL(sum(pr_status), 0) ing from project where pr_status = 4) d,
+			     (select NVL(sum(pr_status), 0) compl from project where pr_status = 5) e
+	</select>
+	
+	<select id="pjCategory" resultClass="java.util.HashMap">
+		select a.*,b.*
+			from (select NVL(count(pr_cate_num), 0) development from project where pr_cate_num between 1 and 9) a,
+			     (select NVL(count(pr_cate_num), 0) design from project where pr_cate_num between 10 and 21) b
+	</select>
+	
+	<select id="pjRegion" resultClass="java.util.HashMap">
+		select a.*,b.*,c.*,d.*,e.*
+			from (select NVL(count(pr_add), 0) seoul from project where regexp_like(pr_add, '서울|경기|인천')) a,
+			     (select NVL(count(pr_add), 0) chung from project where regexp_like(pr_add, '충청북도|충북|충청남도|충남|대전')) b,
+			     (select NVL(count(pr_add), 0) gyeong from project where regexp_like(pr_add, '경상북도|경북|경상남도|경남|울산|부산|대구')) c,
+			     (select NVL(count(pr_add), 0) jeon from project where regexp_like(pr_add, '전라북도|전북|전라남도|전남|광주')) d,
+			     (select NVL(count(pr_add), 0) kang from project where regexp_like(pr_add, '강원')) e,
+			     (select NVL(count(pr_add), 0) jeju from project where regexp_like(pr_add, '제주')) f
+	</select>
+	
+	<select id="projectCnt" resultClass="java.util.HashMap">
+		SELECT B.*
+		FROM(SELECT ROWNUM RNUM, A.*
+		FROM(select client, count(pr_check) as CNT
+		from project
+		group by client order by CNT DESC )A) B
+		<![CDATA[
+		WHERE RNUM <= 4
+		]]>
+	</select>
+	
+	<select id="projectPayment" resultClass="java.util.HashMap">
+		SELECT B.*
+		FROM(SELECT ROWNUM RNUM, A.*
+		FROM(select client, sum(pr_payment) as SUM from project WHERE pr_status = 4 OR pr_status = 5 group by client order by SUM DESC )A) B
+		<![CDATA[
+		WHERE RNUM <= 4
+		]]>
+	</select>
+	
+	<select id="freeJoinProject" resultClass="java.util.HashMap">
+		SELECT B.*
+	    FROM (SELECT ROWNUM RNUM, A.*
+	          FROM(SELECT CONS_FREE_ID, COUNT(PR_CHECK) as CNT 
+	               FROM CONSTRACT, PROJECT 
+	               WHERE cons_status = 'y' 
+	               AND pr_status = 5 
+	               OR pr_status = 4
+	               AND CONS_PROJ_NUM = PR_NUM 
+	               GROUP BY CONS_FREE_ID
+	               ORDER BY CNT DESC) A) B
+	    <![CDATA[           
+	    WHERE RNUM <= 4
+	    ]]>
+	</select>
+	
+	<select id="freeSalary" resultClass="java.util.HashMap">
+		SELECT B.* 
+	    FROM (SELECT ROWNUM RNUM, A.* 
+	          FROM(SELECT CONS_FREE_ID, SUM(CONS_PAYMENT)*0.9 AS SUM 
+	          FROM CONSTRACT, PROJECT
+	          WHERE cons_status = 'y' AND pr_status = 5 AND CONS_PROJ_NUM = PR_NUM GROUP BY CONS_FREE_ID ORDER BY SUM DESC )A) B	
+	    <![CDATA[  
+	    WHERE RNUM <= 4
+	    ]]>
+	</select>
+		
+	<update id="updateGit" parameterClass="map">
+		UPDATE PROJECT
+		SET PR_GITURL = #gitUrl#
+		WHERE PR_NUM = #pr_num#
+	</update>
+	
+	<select id="clMyproject" parameterClass="map" resultClass="projectVO">
+		SELECT ROWNUM rnum, A.*
+		FROM(SELECT *
+		FROM project
+		WHERE client = #client#
+		AND pr_status = '4'
+        ORDER BY PR_NUM DESC) A
+        ORDER BY RNUM ASC
+	</select>
+	
+	<insert id="insertProject" parameterClass="projectVO" >
+		<selectKey resultClass="string" keyProperty="pr_num">
+			select TOTAL_SEQ.NEXTVAL from dual
+		</selectKey>
+		insert into project values(
+		#pr_num#,
+		#pr_cate_num#,
+		#pr_title#,
+		#pr_ex_period#,
+		#pr_payment#,
+		#pr_content#,
+		sysdate,
+		#pr_giturl#,
+		#pr_deadline#,
+		#pr_meeting#,
+		#pr_add#,
+		#pr_start#,
+		#pr_support#,
+		#client#,
+		1,
+		#mtype_num#,
+		#pr_type#,
+		#pr_end#,
+		null,
+		null,
+		0
+		)
+	</insert>
+	<update id="payOk" parameterClass="map">
+		UPDATE PROJECT
+		SET PR_CHECK = SYSDATE
+		WHERE PR_NUM = #pr_num#
+	</update>
+	<select id="inspectionProject" parameterClass="map" resultMap="projectMap">
+		SELECT A.*
+		FROM (SELECT ROWNUM RNUM,pr_num,pr_cate_num,pr_title,pr_check,pr_ex_period,pr_payment,pr_content,TO_CHAR(pr_date, 'YYYY/MM/DD') pr_date,TO_CHAR(pr_deadline, 'YYYY/MM/DD') pr_deadline,pr_add,TO_CHAR(pr_start, 'YYYY/MM/DD') pr_start,TO_CHAR(pr_end, 'YYYY/MM/DD') pr_end,pr_support,client,pr_status,pr_type,TRUNC(pr_deadline - SYSDATE, 0) dday
+			FROM PROJECT 
+			where pr_status='1'
+			and client=#client#
+			) A
+		ORDER BY A.RNUM DESC
+	</select>
+	
+	<select id="endProjectList" parameterClass="map" resultClass="java.util.HashMap">
+<!-- 		SELECT * -->
+<!-- 		FROM PROJECT P INNER JOIN CONSTRACT C ON(P.PR_NUM = C.CONS_PROJ_NUM) -->
+<!-- 		WHERE PR_STATUS = '5' -->
+<!-- 		AND CONS_FREE_ID = #mem_id# -->
+     	
+     	  SELECT B.*
+	      FROM(SELECT ROWNUM rnum , A.*
+	      FROM(SELECT *
+	      FROM PROJECT P INNER JOIN CONSTRACT C 
+	      ON(P.PR_NUM = C.CONS_PROJ_NUM 
+	      AND C.CONS_FREE_ID=#mem_id#
+	      AND PR_STATUS='5')
+	      <dynamic>
+            <isNotEmpty property="search_keyword" prepend="where">
+				PR_TITLE LIKE '%'||#search_keyword#||'%'
+			</isNotEmpty>
+        </dynamic>) A ) B
+	      <![CDATA[
+	 	WHERE B.RNUM <= #startCount#
+	 	AND B.RNUM >=#endCount#
+	 	]]>
+	      ORDER BY B.RNUM DESC
+		
+		
+<!-- 		SELECT A.* -->
+<!-- 		FROM (CONSTRACT C INNER JOIN PROJECT P ON(C.CONS_PROJ_NUM = P.PR_NUM) -->
+<!-- 		WHERE PR_STATUS='5' -->
+<!-- 		AND CONS_FREE_ID = #mem_id# -->
+<!-- 		<dynamic> -->
+<!-- 			<isNotEmpty property="search_keyword" prepend="and"> -->
+<!-- 				(PR_TITLE LIKE '%'||#search_keyword#||'%' -->
+<!-- 				OR PR_CONTENT LIKE '%'||#search_keyword#||'%') -->
+<!-- 			</isNotEmpty> -->
+<!-- 		</dynamic> -->
+<!-- 		) A -->
+<!-- 	<![CDATA[ -->
+<!--  	WHERE A.RNUM <= #startCount# -->
+<!--  	AND A.RNUM >=#endCount# -->
+<!--  	]]> -->
+<!-- 	ORDER BY A.RNUM DESC -->
+	</select>
+	
+	<insert id="saveProject" parameterClass="projectVO" >
+		<selectKey resultClass="string" keyProperty="pr_num">
+			select TOTAL_SEQ.NEXTVAL from dual
+		</selectKey>
+		insert into project values(
+		#pr_num#,
+		#pr_cate_num#,
+		#pr_title#,
+		#pr_ex_period#,
+		#pr_payment#,
+		#pr_content#,
+		sysdate,
+		#pr_giturl#,
+		#pr_deadline#,
+		#pr_meeting#,
+		#pr_add#,
+		#pr_start#,
+		#pr_support#,
+		#client#,
+		0,
+		#mtype_num#,
+		#pr_type#,
+		#pr_end#,
+		null,
+		null,
+		0
+		)
+	</insert>
+	
+	<update id="updateProject" parameterClass="projectVO">
+	update project set
+			PR_CATE_NUM=#pr_cate_num#,
+			PR_TITLE=#pr_title#,
+			PR_EX_PERIOD=#pr_ex_period#,
+			PR_PAYMENT=#pr_payment#,
+			PR_CONTENT=#pr_content#,
+			PR_DATE=sysdate,
+			PR_DEADLINE=#pr_deadline#,
+			PR_MEETING=#pr_meeting#,
+			PR_ADD=#pr_add#,
+			PR_START=#pr_start#,
+			PR_SUPPORT=#pr_support#,
+			MTYPE_NUM=#mtype_num#,
+			PR_TYPE=#pr_type#,
+			PR_END=#pr_end#,
+			PR_STATUS=#pr_status#
+			where pr_num=#pr_num#
+	</update>
+	
+	<select id="temporaryList" parameterClass="map" resultClass="java.util.HashMap">
+	select *
+	from project
+	where client=#client#
+	<dynamic>
+	<isEmpty property="status">
+	and pr_status='0'
+	</isEmpty>
+	<isNotEmpty property="status">
+	and pr_status='6'
+	</isNotEmpty>
+	</dynamic>
+	</select>
+	
+	<update id="deleteProject" parameterClass="string">
+		update project set pr_status='7' where pr_num=#pr_num#
+	</update>
+	
+	<select id="endProjectView" parameterClass="map" resultClass="projectVO">
+		SELECT *
+		FROM project
+		WHERE pr_num=#pr_num#
+	</select>
+	
+	<select id="endCount" parameterClass="map" resultClass="int">
+   	 	  SELECT COUNT(*)
+	      FROM PROJECT P INNER JOIN CONSTRACT C 
+	      ON(P.PR_NUM = C.CONS_PROJ_NUM 
+	      AND C.CONS_FREE_ID=#mem_id# 
+	      AND PR_STATUS = '5')
+	      <dynamic>
+			<isNotEmpty property="search_keyword" prepend="where">
+				PR_TITLE LIKE '%'||#search_keyword#||'%'
+			</isNotEmpty>
+   	 		</dynamic>
+            
+            
+<!-- 		SELECT COUNT(*) -->
+<!-- 		FROM CONSTRACT C INNER JOIN PROJECT P ON(C.CONS_PROJ_NUM = P.PR_NUM) -->
+<!-- 		WHERE PR_STATUS = '5' -->
+<!-- 		AND CONS_FREE_ID = #mem_id# -->
+<!-- 		<dynamic> -->
+<!-- 	   		<isNotEmpty property="search_keyword" prepend="and"> -->
+<!-- 	   			(PR_TITLE LIKE '%'||#search_keyword#||'%' -->
+<!-- 				OR PR_CONTENT LIKE '%'||#search_keyword#||'%') -->
+<!-- 	   		</isNotEmpty> -->
+<!--    	  </dynamic> -->
+	</select>
+	
+	<select id="clEndPrList" parameterClass="map" resultMap="projectMap">
+		SELECT A.*
+		FROM (SELECT ROWNUM RNUM ,pr_num,pr_cate_num,pr_check,pr_title,pr_ex_period,pr_payment,pr_content,TO_CHAR(pr_date, 'YYYY/MM/DD') pr_date,pr_deadline,pr_add,TO_CHAR(pr_start, 'YYYY/MM/DD') pr_start,TO_CHAR(pr_end, 'YYYY/MM/DD') pr_end,pr_support,client,pr_status,pr_type,TRUNC(pr_deadline - SYSDATE, 0) dday
+		FROM PROJECT
+		WHERE PR_STATUS='5'
+		AND CLIENT=#client#
+		<dynamic>
+			<isNotEmpty property="search_keyword" prepend="and">
+				(PR_TITLE LIKE '%'||#search_keyword#||'%'
+				OR PR_CONTENT LIKE '%'||#search_keyword#||'%')
+			</isNotEmpty>
+		</dynamic>
+		) A
+	<![CDATA[
+ 	WHERE A.RNUM <= #startCount#
+ 	AND A.RNUM >= #endCount#
+ 	]]>
+	ORDER BY A.RNUM DESC
+	</select>
+	
+	<select id="clEndPrView" parameterClass="map" resultClass="projectVO">
+		SELECT *
+		FROM project
+		WHERE pr_num=#pr_num#
+	</select>
+	
+	<select id="clEndCount" resultClass="int" parameterClass="map">
+   	SELECT COUNT(*)
+   	FROM PROJECT
+   	WHERE pr_status = '5' 
+   	AND CLIENT=#client#
+      <dynamic>
+   		<isNotEmpty property="search_keyword" prepend="and">
+			(PR_TITLE LIKE '%'||#search_keyword#||'%'
+			OR PR_CONTENT LIKE '%'||#search_keyword#||'%')
+		</isNotEmpty>
+   	  </dynamic>
+   </select>
+   
+   <select id="adEndPrList" parameterClass="map" resultMap="projectMap">
+		SELECT A.*
+		FROM (SELECT ROWNUM RNUM,pr_num,pr_cate_num,pr_check,pr_title,pr_ex_period,pr_payment,pr_content,TO_CHAR(pr_date, 'YYYY/MM/DD') pr_date,pr_deadline,pr_add,TO_CHAR(pr_start, 'YYYY/MM/DD') pr_start,TO_CHAR(pr_end, 'YYYY/MM/DD') pr_end,pr_support,client,pr_status,pr_type,TRUNC(pr_deadline - SYSDATE, 0) dday
+			FROM PROJECT
+			WHERE PR_STATUS='5'
+			<dynamic>
+				<isNotEmpty property="search_keyword" prepend="and">
+					(PR_TITLE LIKE '%'||#search_keyword#||'%'
+					OR PR_CONTENT LIKE '%'||#search_keyword#||'%')
+				</isNotEmpty>
+			</dynamic>
+			) A
+	<![CDATA[
+ 	WHERE A.RNUM <= #startCount#
+ 	AND A.RNUM >=#endCount#
+ 	]]>
+	ORDER BY A.RNUM DESC
+	</select>
+	
+	<select id="adEndCount" resultClass="int" parameterClass="map">
+		SELECT COUNT(*)
+	   	FROM PROJECT
+	   	WHERE pr_status = '5' 
+	      <dynamic>
+	   		<isNotEmpty property="search_keyword" prepend="and">
+				(PR_TITLE LIKE '%'||#search_keyword#||'%'
+				OR PR_CONTENT LIKE '%'||#search_keyword#||'%')
+			</isNotEmpty>
+	   	  </dynamic>
+	</select>
+	
+	<update id="updateContract">
+      UPDATE PROJECT 
+      SET PR_STATUS = 3
+      WHERE to_char(PR_DEADLINE,'yyyymmdd') = to_char(SYSDATE,'yyyymmdd')
+   </update>
+   
+   <sql id="adsearch">
+   	<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="total">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+					AND	CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="title">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="writer">
+						CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+   </sql>
+   
+	<select id="conProjectList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT B.*
+		FROM(SELECT ROWNUM RNUM, A.*
+		FROM(SELECT PR_NUM, 
+		       PR_CATE_NUM, 
+		       PR_TITLE, 
+		       PR_START, 
+		       CLIENT, 
+		       PR_CHECK,
+		       NVL(SUM(CONS_PAYMENT), 0) AS CONS_PAYMENT
+		FROM PROJECT LEFT OUTER JOIN CONSTRACT ON(PR_NUM = CONS_PROJ_NUM)
+		WHERE PR_STATUS = '3'
+		<include refid="adsearch"/>
+		GROUP BY CONSTRACT.CONS_PROJ_NUM, PR_NUM, PR_CATE_NUM, PR_TITLE, PR_START, 
+		CLIENT, PR_CHECK
+		ORDER BY PR_NUM ASC) A) B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		AND B.RNUM >= #endCount#
+		]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="projectingList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT B.*
+		FROM(SELECT ROWNUM RNUM, A.*
+		FROM(SELECT PR_NUM, 
+		       PR_CATE_NUM, 
+		       PR_TITLE, 
+		       PR_START,
+		       PR_END, 
+		       CLIENT, 
+		       PR_CHECK,
+		       TRUNC(PR_END - SYSDATE, 0) AS DDAY,
+		       NVL(SUM(CONS_PAYMENT), 0) AS CONS_PAYMENT
+		FROM PROJECT LEFT OUTER JOIN CONSTRACT ON(PR_NUM = CONS_PROJ_NUM)
+		WHERE PR_STATUS = '4'
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="total">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+					AND	CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="title">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="writer">
+						CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+		GROUP BY CONSTRACT.CONS_PROJ_NUM, PR_NUM, PR_CATE_NUM, PR_TITLE, PR_START, 
+		CLIENT,PR_END ,PR_CHECK, TRUNC(PR_END - SYSDATE, 0)
+		ORDER BY PR_NUM ASC) A) B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		AND B.RNUM >= #endCount#
+		]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="conProjectCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM PROJECT 
+		WHERE PR_STATUS = '3'
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="total">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+					AND	CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="title">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="writer">
+						CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="projectingCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM PROJECT 
+		WHERE PR_STATUS = '4'
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="total">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+					AND	CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="title">
+						PR_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="writer">
+						CLIENT LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<update id="projectDelete" parameterClass="map">
+		UPDATE PROJECT
+		SET PR_STATUS = '7'
+		WHERE PR_NUM = #pr_num#
+	</update>
+
+	<select id="chatFreeProjectList" parameterClass="map" resultClass="java.util.HashMap">
+		select CONS_NUM, CONS_FREE_ID, CONS_PROJ_NUM, CONS_PERIOD, PR_TITLE,CLIENT,PR_NUM
+		from constract,project
+		where cons_free_id=#mem_id#
+		and cons_status='y'
+		and CONS_PROJ_NUM=pr_num
+		and pr_check is not null
+		and pr_status=4
+
+	</select>
+	
+	<select id="chatClientProjectList" parameterClass="map" resultClass="java.util.HashMap">
+		select *
+		from project
+		where client=#mem_id#
+		and pr_check is not null
+		and pr_status=4
+	</select>
+	
+	
+	<select id="chatMemberList" parameterClass="map" resultClass="java.util.HashMap">
+		select CONS_NUM, CONS_FREE_ID, CONS_PROJ_NUM,PART, PR_NUM, PR_TITLE, MEM_LOGIN
+		from constract c,project ,part p, MEMBER M
+		where cons_proj_num=#pr_num#
+        AND MEM_ID = CONS_FREE_ID
+		and cons_proj_num=pr_num
+		and p.part_num=c.part_num
+		<dynamic>
+			<isNotEmpty property="mem_id" >
+				and cons_free_id != #mem_id#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<update id="contractProject" parameterClass="map">
+		UPDATE PROJECT
+		SET PR_STATUS = '4'
+		WHERE PR_NUM = #pr_num#
+	</update>
+	
+	<update id="updateEndCheck" parameterClass="map">
+		UPDATE PROJECT
+		SET PR_ENDCHECK	= '1'
+		WHERE PR_NUM = #pr_num#
+	</update>
+	
+	<update id="updatePrStatus" parameterClass="map">
+		UPDATE PROJECT
+	    SET PR_STATUS = '5'
+	  	WHERE PR_NUM = #pr_num#
+	</update>
+	
+	<select id="frEndPayment" parameterClass="map" resultClass="int">
+		SELECT SUM(P.PR_PAYMENT)
+		   FROM PROJECT P, CONSTRACT C
+           WHERE P.PR_NUM = C.CONS_PROJ_NUM
+		   AND P.PR_STATUS = '5'
+		   AND C.CONS_FREE_ID = #mem_id#
+	</select>
+	
+	<select id="countProjecting" parameterClass="map" resultClass="int">
+		 SELECT count(*)
+		   FROM PROJECT P, CONSTRACT C
+           WHERE P.PR_NUM = C.CONS_PROJ_NUM
+		   AND P.PR_STATUS = '4'
+		   AND C.CONS_STATUS = 'y'
+		   AND C.CONS_FREE_ID = #mem_id#
+	</select>
+	
+	<select id="clCountRegisPr" parameterClass="map" resultClass="int">
+		 SELECT count(*)
+		   FROM PROJECT
+           WHERE (PR_STATUS = '2'
+		   OR PR_STATUS = '3'
+		   OR PR_STATUS = '4'
+		   OR PR_STATUS = '5')
+		   AND CLIENT = #mem_id#
+	</select>
+	
+	<select id="clCountContract" parameterClass="map" resultClass="int">
+		SELECT count(*)
+		   FROM PROJECT
+		   WHERE PR_STATUS = '3'
+		   AND CLIENT = #mem_id#
+	</select>
+	
+	<select id="clCountProjecting" parameterClass="map" resultClass="int">
+		SELECT count(*)
+		   FROM PROJECT
+		   WHERE PR_STATUS = '4'
+		   AND CLIENT = #mem_id#
+	</select>
+	
+	<select id="clCountEndPr" parameterClass="map" resultClass="int">
+		SELECT count(*)
+		   FROM PROJECT
+		   WHERE PR_STATUS = '5'
+		   AND CLIENT = #mem_id#
+	</select>
+	
+	<select id="clTotalPay" parameterClass="map" resultClass="int">
+		SELECT NVL(SUM(PR_PAYMENT),0)
+		   FROM PROJECT
+		   WHERE PR_STATUS = '5'
+		   AND CLIENT = #mem_id#
+	</select>
+	
+	
+	<select id="mainProList" resultClass="projectVO">
+		SELECT B.*
+		FROM(SELECT ROWNUM rnum, A.*
+		FROM(select *
+		from project
+		where pr_status='2'
+		order by pr_num desc ) A )B
+		<![CDATA[
+			WHERE B.RNUM <= 8
+		]]>
+	</select>
+	
+	<select id="stbyProList" resultClass="projectVO">
+		SELECT B.*
+		FROM(SELECT ROWNUM rnum, A.*
+		FROM(select *
+		from project
+		where pr_status='1'
+		order by pr_num desc ) A )B
+		<![CDATA[
+ 			WHERE B.RNUM <= 7 
+ 		]]> 
+	</select>
+	
+	<select id="projectinList" resultClass="projectVO">
+		SELECT B.*
+		FROM(SELECT ROWNUM rnum, A.*
+		FROM(select *
+		from project
+		where pr_status='4'
+		order by pr_num desc ) A )B
+		<![CDATA[
+			WHERE B.RNUM <= 7
+		]]>
+	</select>
+	
+	<select id="adverProjectList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT B.*
+		FROM(SELECT ROWNUM rnum, A.*
+		FROM(SELECT P.PR_NUM, P.PR_TITLE,P.PR_DATE, P.PR_DEADLINE, P.CLIENT, COUNT(AP_NUM) AS APNUM
+		FROM PROJECT P LEFT OUTER JOIN APPLY A ON(P.PR_NUM = A.AP_PROJECT) 
+		WHERE P.PR_STATUS = 2
+		<include refid="adsearch"/>
+		GROUP BY P.PR_NUM, P.PR_TITLE, P.PR_DATE, P.PR_DEADLINE, P.CLIENT
+		ORDER BY PR_NUM ASC)A)B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		AND B.RNUM >= #endCount#
+		]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="adverPrCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM PROJECT P
+		WHERE P.PR_STATUS = 2
+		<include refid="adsearch"/>
+	</select>
+	
+	<update id="adverEndproject" parameterClass="map">
+		UPDATE PROJECT
+		SET PR_STATUS = '3'
+		WHERE PR_NUM = #pr_num#
+	</update>
+	
+	<select id="proing" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM PROJECT
+		WHERE CLIENT = #client#
+		AND PR_STATUS = '4'
+	</select>
+	
+	<select id="proMoney" parameterClass="map" resultClass="int">
+		SELECT NVL(SUM(CONS_PAYMENT),0)
+	    FROM PROJECT P INNER JOIN CONSTRACT C ON(P.PR_NUM = C.CONS_PROJ_NUM)
+	    WHERE P.CLIENT = #client#
+	</select>
+	
+	<select id="frEndCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+	    FROM PROJECT P INNER JOIN CONSTRACT C ON(P.PR_NUM = C.CONS_PROJ_NUM)
+	    WHERE P.PR_STATUS = 5
+	    AND C.CONS_FREE_ID = #mem_id#
+	</select>
+	
+	<select id="frProMoney" parameterClass="map" resultClass="int">
+		SELECT NVL(SUM(CONS_PAYMENT),0)
+	    FROM PROJECT P INNER JOIN CONSTRACT C ON(P.PR_NUM = C.CONS_PROJ_NUM)
+	    WHERE P.PR_STATUS = 5
+	    AND C.CONS_FREE_ID = #mem_id#
+	</select>
+</sqlMap>

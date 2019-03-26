@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="memberStatus">
+	<typeAlias alias="mem_StatusVO" type="kr.or.ddit.vo.Mem_statusVO"/>
+
+	<select id="memStatus" parameterClass="map" resultClass="string">
+		SELECT STATUS_NAME 
+		FROM MEM_STATUS
+		WHERE STATUS_NUM = #status_num#
+		
+	</select>
+	
+	
+	
+</sqlMap>

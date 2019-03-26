@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="contract">
+	<typeAlias alias="constractVO" type="kr.or.ddit.vo.ConstractVO"/>
+	
+	<typeAlias alias="cons_MemJoinVO" type="kr.or.ddit.vo.Cons_MemJoinVO"/>
+	<typeAlias alias="cons_ClientJoinVO" type="kr.or.ddit.vo.Cons_ClientJoinVO"/>
+	
+	<select id="projectingList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT ROWNUM rnum, P.PR_NUM, P.PR_TITLE, P.CLIENT, C.CONS_PAYMENT, C.CONS_DATE, P.PR_START, A.PART
+		FROM CONSTRACT C Inner join PROJECT P ON (P.PR_NUM = C.CONS_PROJ_NUM) INNER JOIN PART A ON(C.PART_NUM = A.PART_NUM)
+		WHERE C.CONS_FREE_ID = #cons_free_id#
+		AND C.CONS_STATUS = 'y'
+		AND P.PR_STATUS = 4
+	</select>
+	<select id="myProjectCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM CONSTRACT C Inner join PROJECT P ON (P.PR_NUM = C.CONS_PROJ_NUM) INNER JOIN PART A ON(C.PART_NUM = A.PART_NUM)
+		WHERE C.CONS_FREE_ID = #cons_free_id#
+		AND C.CONS_STATUS = 'y'
+		AND P.PR_STATUS = 4
+	</select>
+	
+	<select id="memList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT CONS_FREE_ID, PART, MEM_PICTURE
+        FROM CONSTRACT C INNER JOIN PART P ON (C.PART_NUM = P.PART_NUM) 
+                         INNER JOIN MEMBER M ON(C.CONS_FREE_ID = M.MEM_ID)
+        WHERE CONS_PROJ_NUM = #cons_proj_num#
+        AND C.CONS_STATUS = 'y'
+        ORDER BY P.PART_NUM ASC
+	</select>
+	
+	<select id="meetList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT CONS_FREE_ID, PART
+        FROM CONSTRACT C INNER JOIN PART P ON (C.PART_NUM = P.PART_NUM)
+        WHERE CONS_PROJ_NUM = #cons_proj_num#
+        AND CONS_FREE_ID != #cons_free_id#
+        AND C.CONS_STATUS = 'y'
+        ORDER BY P.PART_NUM ASC
+	</select>
+	
+	<select id="constractInfo" parameterClass="map" resultClass="constractVO">
+		SELECT *
+		FROM CONSTRACT
+		WHERE CONS_FREE_ID = #mem_id#
+		AND CONS_PROJ_NUM = #pr_num#
+	</select>
+	
+	<update id="updateCons" parameterClass="constractVO">
+		UPDATE CONSTRACT
+		SET CONS_PAYMENT = #cons_payment#,
+			CONS_PERIOD = #cons_period#,
+			PART_NUM = #part_num#,
+			CONS_DATE = SYSDATE,
+			CONS_STATUS = '1'
+		WHERE CONS_NUM = #cons_num#
+	</update>
+	
+	<select id="contractList" resultClass="java.util.HashMap" parameterClass="map">
+	    SELECT A.*
+       FROM(SELECT CONS_NUM, CONS_PERIOD, NVL(CONS_PAYMENT,0) AS CONS_PAYMENT,TO_CHAR(CONS_DATE,'YYYY-MM-DD') CONS_DATE,
+      			CONS_CONTENT, PART,CONS_STATUS, PR_NUM, PR_TITLE, CLIENT, PR_STATUS,CONS_FREE_ID,
+      			TO_CHAR(PR_START,'YYYY-MM-DD') PR_START,TO_CHAR(PR_END,'YYYY-MM-DD') PR_END,PR_CHECK,MEM_NAME, MEM_MAIL, MEM_HP, MEM_FAX, MEM_PICTURE
+	   FROM CONSTRACT C LEFT OUTER JOIN PROJECT P ON(C.CONS_PROJ_NUM = P.PR_NUM)
+                        LEFT OUTER JOIN MEMBER M ON(C.CONS_FREE_ID = M.MEM_ID)
+                        LEFT OUTER JOIN PART A ON(C.PART_NUM = A.PART_NUM))A
+	   WHERE A.CONS_FREE_ID=#mem_id#
+	   AND A.PR_STATUS='3'
+	</select>
+	
+	<update id="freeNo" parameterClass="map">
+	update constract set cons_status=0, cons_content=#cons_content# where cons_num=#cons_num#
+	</update>
+	
+	<update id="freeOk" parameterClass="map">
+	update constract set cons_status=2 where cons_num=#cons_num#
+	</update>
+	
+	<update id="clientOk" parameterClass="map">
+	update constract set cons_status='y' where cons_num=#cons_num#
+	</update>
+	
+	<select id="consFile" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT *
+		FROM CONSTRACT C INNER JOIN CONSTRACT_FILE F ON(C.CONS_NUM = F.CONS_NUM)
+		WHERE C.CONS_NUM = #cons_num#
+	</select>
+	
+	<select id="totalMoney" parameterClass="map" resultClass="int">
+		SELECT NVL(SUM(CONS_PAYMENT),0)
+		FROM CONSTRACT
+		WHERE CONS_PROJ_NUM = #cons_proj_num#
+	</select>
+	<insert id="insertContract" parameterClass="constractVO">
+	<selectKey keyProperty="cons_num">
+		SELECT CON_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO CONSTRACT(CONS_NUM, CONS_FREE_ID, CONS_PROJ_NUM)
+		VALUES(#cons_num#,#cons_free_id#, #cons_proj_num#)
+	</insert>
+	
+	<select id="evalFree" parameterClass="map" resultClass="cons_MemJoinVO">
+		SELECT C.CONS_FREE_ID, M.MEM_PICTURE, M.FTYPE_NUM, M.MTYPE_NUM
+        FROM CONSTRACT C, PROJECT P, MEMBER M
+        WHERE C.CONS_PROJ_NUM = P.PR_NUM
+        AND M.MEM_ID = C.CONS_FREE_ID
+        AND P.PR_NUM = #pr_num#
+	</select>
+	
+	<select id="evalClient" parameterClass="map" resultClass="cons_ClientJoinVO">
+		SELECT P.CLIENT, M.MEM_PICTURE, M.MTYPE_NUM
+	        FROM PROJECT P, MEMBER M
+	        WHERE M.MEM_ID = P.CLIENT
+	        AND P.PR_NUM = #pr_num#
+	</select>
+	
+	<update id="updateEndCheck" parameterClass="map">
+		UPDATE CONSTRACT
+		SET CONS_ENDCHECK = '1'
+		WHERE CONS_PROJ_NUM = #cons_proj_num#
+		AND CONS_FREE_ID = #cons_free_id#
+	</update>
+	
+	<select id="countConsFree" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+	     FROM CONSTRACT
+	     WHERE CONS_PROJ_NUM = #cons_proj_num#
+	</select>
+	
+	<select id="countConsEndChk" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+	    FROM CONSTRACT
+	    WHERE CONS_ENDCHECK = '1'
+	    AND CONS_PROJ_NUM = #cons_proj_num#
+	</select>
+	
+	<select id="checkEndChk" parameterClass="map" resultClass="int">
+		SELECT CONS_ENDCHECK
+		   FROM CONSTRACT
+		   WHERE CONS_FREE_ID = #cons_free_id#
+		   AND CONS_PROJ_NUM = #cons_proj_num#
+	</select>
+	<select id="countPay" resultClass="int">
+		select NVL(sum(cons_payment),0)
+		from constract
+		where cons_status='y'
+		and CONS_ENDCHECK = '1'
+	</select>
+	
+	<select id="conChk" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM CONSTRACT
+		WHERE CONS_STATUS = 'y'
+		AND CONS_PROJ_NUM = #pr_num#
+	</select>
+	
+	<select id="selectPr_num" parameterClass="string" resultClass="string">
+		select cons_proj_num 
+		from constract
+		where cons_num=#cons_num#
+	</select>
+	
+	<select id="selectFree" parameterClass="string" resultClass="string">
+		select cons_free_id
+		from constract
+		where cons_proj_num=#pr_num#
+	</select>
+	
+</sqlMap>

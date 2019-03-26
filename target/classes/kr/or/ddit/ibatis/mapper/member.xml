@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="member">
+	<typeAlias alias="memberVO" type="kr.or.ddit.vo.MemberVO"/>
+	<typeAlias alias="portfolioVO" type="kr.or.ddit.vo.PortfolioVO"/>
+
+	<sql id="selectAll">
+		SELECT * FROM MEMBER	
+	</sql>
+	
+	<select id="memberInfo" parameterClass="map" resultClass="memberVO">
+		<include refid="selectAll"/>
+		WHERE MEM_ID = #mem_id#
+		<dynamic>
+			<isNotEmpty property="mem_pass">
+			  AND MEM_PASS = #mem_pass# 
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<insert id="insertMember" parameterClass="memberVO">
+		INSERT INTO MEMBER(mem_id, mem_pass, mem_name, mem_mail, mem_hp, mem_fax, mem_bir, 
+		mem_zipcode, mem_add1, mem_add2, mtype_num, ftype_num, iden_num, status_num, mem_date)
+		VALUES (#mem_id#, #mem_pass#, #mem_name#, #mem_mail#, #mem_hp#, #mem_fax#, #mem_bir#, 
+		#mem_zipcode#, #mem_add1#, #mem_add2#, #mtype_num#, #ftype_num#, #iden_num#, '0', SYSDATE)
+	</insert>
+		
+		
+	<sql id="selectClient">
+		SELECT * FROM member WHERE iden_num = '1' AND status_num != '3'
+	</sql>
+	
+	<sql id="selectFree">
+		SELECT * FROM member WHERE iden_num = '2' AND status_num = '0'
+	</sql>
+	
+	<sql id="selectFreelancer">
+		SELECT * FROM member WHERE iden_num = '2'	AND status_num != '3'
+	</sql>
+	
+	<sql id="selectBlack">
+		SELECT * FROM member WHERE status_num = '2'	AND status_num != '3' AND iden_num != '0'
+	</sql>
+	
+	<sql id="searchCondition">
+	<dynamic prepend="AND">
+		<isNotEmpty property="search_keyword" open="(" close=")">
+			<isEqual property="search_keycode" compareValue="TOTAL">
+			    mem_id like '%'||#search_keyword#||'%'
+			 OR mem_name like '%'||#search_keyword#||'%'
+			 OR mem_mail like '%'||#search_keyword#||'%'
+			 OR mem_add1 like '%'||#search_keyword#||'%'
+			 OR mem_add2 like '%'||#search_keyword#||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="ID">
+			    mem_id like '%'||#search_keyword#||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="NAME">
+			    mem_name like '%'||#search_keyword#||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="MAIL">
+			    mem_mail like '%'||#search_keyword#||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="ADDRESS1">
+			    mem_add1 like '%'||#search_keyword#||'%'
+			</isEqual>
+			<isEqual property="search_keycode" compareValue="ADDRESS2">
+			    mem_add2 like '%'||#search_keyword#||'%'
+			</isEqual>
+		</isNotEmpty>
+	</dynamic>
+	</sql>
+	
+	<select id="clientList" parameterClass="map" resultClass="memberVO">
+      SELECT B.* 
+      FROM(SELECT ROWNUM rnum, A.*
+      FROM(<include refid="selectClient"/> 
+      		<include refid="searchCondition"/>
+      		ORDER BY mem_id
+      		) A) B
+      <![CDATA[ 
+      WHERE B.RNUM <= #startCount# 
+      	AND B.RNUM >= #endCount# 
+      ]]>      
+      ORDER BY B.RNUM DESC
+   </select>
+	
+   
+   <select id="freeList" parameterClass="map" resultClass="memberVO">
+	   	SELECT B.*
+	   	FROM(SELECT ROWNUM rnum, A.*
+	   	FROM(<include refid="selectFree"/>
+	   		 <dynamic>
+				<isNotEmpty property="search_keyword" open="AND (" close=")" >
+					<isEqual property="search_keycode" compareValue="ALL" >
+						MEM_ID LIKE '%'||#search_keyword#||'%'
+					</isEqual>
+					<isEqual property="search_keycode" compareValue="DEVELOPER" >
+						(FTYPE_NUM = '0'
+						AND MEM_ID LIKE '%'||#search_keyword#||'%') 
+						OR (FTYPE_NUM = '0')
+					</isEqual>
+					<isEqual property="search_keycode" compareValue="DESIGNER" >
+						(FTYPE_NUM = '1'
+						AND MEM_ID LIKE '%'||#search_keyword#||'%')
+						OR (FTYPE_NUM = '1')
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	   		<dynamic>
+		   		<isNotEmpty property="search_keyword" prepend="and">
+		   		MEM_ID LIKE '%'||#search_keyword#||'%'
+		   		OR MEM_SELFINFO LIKE '%'||#search_keyword#||'%'
+		   		</isNotEmpty>
+		   	  </dynamic>
+	   		 ORDER BY mem_id
+	   		) A) B
+	   		<![CDATA[
+	   		WHERE B.RNUM <= #startCount#
+	   		  AND B.RNUM >= #endCount#
+	   		]]>
+	   		ORDER BY B.RNUM DESC
+   </select>
+   
+   <select id="countFree" resultClass="int" parameterClass="map">
+   	SELECT COUNT(*)
+   	FROM MEMBER
+   	WHERE iden_num = '2' 
+   	AND   status_num = '0'
+      <dynamic>
+   		<isNotEmpty property="search_keyword" prepend="and">
+   		MEM_ID LIKE '%'||#search_keyword#||'%'
+   		OR MEM_SELFINFO LIKE '%'||#search_keyword#||'%'
+   		</isNotEmpty>
+   	  </dynamic>
+   </select>
+   
+	<select id="freelancerList" parameterClass="map" resultClass="memberVO">
+		SELECT B.* 
+     	FROM(SELECT ROWNUM rnum, A.*
+      	FROM(<include refid="selectFreelancer"/> 
+      		<include refid="searchCondition"/>
+      		ORDER BY mem_id
+      		) A) B
+      <![CDATA[ 
+      WHERE B.RNUM <= #startCount# 
+      	AND B.RNUM >= #endCount# 
+      ]]>      
+      ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="blackList" parameterClass="map" resultClass="memberVO">
+		SELECT B.* 
+     	FROM(SELECT ROWNUM rnum, A.*
+      	FROM(<include refid="selectBlack"/> 
+      		<include refid="searchCondition"/>
+      		ORDER BY mem_id
+      		) A) B
+      <![CDATA[ 
+      WHERE B.RNUM <= #startCount# 
+      	AND B.RNUM >= #endCount# 
+      ]]>      
+      ORDER BY B.RNUM DESC
+	</select>
+	<select id="cl_blackList" parameterClass="map" resultClass="memberVO">
+		SELECT ROWNUM rnum, A.*
+		FROM(SELECT *
+		FROM MEMBER
+		WHERE iden_num = '1'
+		AND status_num = '2'
+		AND status_num != '3'
+		) A
+	</select>
+	<select id="free_blackList" parameterClass="map" resultClass="memberVO">
+		SELECT ROWNUM rnum, A.*
+		FROM(SELECT *
+		FROM MEMBER
+		WHERE iden_num = '2'
+		AND status_num = '2'
+		AND status_num != '3'
+		) A
+	</select>	
+	
+	<update id="addBlack" parameterClass="map">
+		UPDATE MEMBER 
+		SET status_num = '2' 
+		WHERE mem_id=#mem_id#
+	</update>
+	
+	<update id="removeBlack" parameterClass="map">
+		UPDATE MEMBER 
+		SET status_num = '0' 
+		WHERE mem_id=#mem_id#
+	</update>
+	
+	<update id="deleteMember" parameterClass="map">
+		UPDATE MEMBER 
+		SET status_num = '3' 
+		WHERE mem_id=#mem_id#
+	</update>
+	
+	<select id="totalCount" parameterClass="map" resultClass="int">
+		SELECT count(*)	
+		FROM member
+		WHERE status_num != '3'
+		AND status_num = '2'
+	</select>
+	<select id="clientCount" parameterClass="map" resultClass="int">
+		SELECT count(*)	
+		FROM member
+		WHERE status_num != '3'
+		AND iden_num = '1'
+	</select>
+	<select id="freelancerCount" parameterClass="map" resultClass="int">
+		SELECT count(*)	
+		FROM member
+		WHERE status_num != '3'
+		AND iden_num = '2'
+	</select>
+	
+	<update id="updateMember" parameterClass="memberVO">
+		UPDATE member
+		SET	   mem_mail = #mem_mail#,
+			   mem_zipcode = #mem_zipcode#,
+			   mem_add1 = #mem_add1#,
+			   mem_add2 = #mem_add2#,
+			   mem_hp = #mem_hp#,
+			   mem_fax = #mem_fax#
+			   <dynamic>
+				<isNotEmpty property="mem_name">
+				  ,mem_name = #mem_name# 
+				</isNotEmpty>
+				<isNotEmpty property="mem_bir">
+				  ,mem_bir = #mem_bir# 
+				</isNotEmpty>
+			  </dynamic>
+		WHERE  mem_id = #mem_id#		
+	</update>
+	
+	<update id="updateSelfInfo" parameterClass="memberVO">
+		UPDATE MEMBER
+			SET MEM_SELFINFO = #mem_selfinfo#
+			<dynamic>
+				<isNotEmpty property="mem_url">
+			   ,MEM_URL = #mem_url#
+			    </isNotEmpty>
+			</dynamic>
+		WHERE MEM_ID = #mem_id#
+	</update>
+
+	<select id="selfInfoCheck" parameterClass="map" resultClass="string">
+		SELECT MEM_SELFINFO
+			FROM MEMBER
+		WHERE MEM_ID = #mem_id#
+	</select>
+
+
+	<select id="selectClient" parameterClass="string" resultClass="memberVO">
+		select *
+		from member
+		where iden_num='1'
+		and mem_id=#mem_id#
+	</select>
+	
+	<update id="insertMemPic" parameterClass="map">
+		UPDATE MEMBER
+		SET MEM_PICTURE = #mem_picture#
+		WHERE MEM_ID = #mem_id#
+	</update>
+
+	<select id="totalCountFree" resultClass="int">
+	 select count(*)
+	 from member
+	 WHERE iden_num = '2' 
+   	 AND   status_num = '0'
+	</select>
+	
+	<select id="findInfo" parameterClass="map" resultClass="memberVO">
+		SELECT * FROM member WHERE mem_mail = #mem_mail# AND mem_name = #mem_name#
+		<dynamic>
+			<isNotEmpty property="mem_id">
+				AND mem_id = #mem_id#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<update id="randomPass" parameterClass="map">
+		UPDATE member SET mem_pass = #mem_pass# WHERE mem_id = #mem_id#
+	</update>
+	
+	<update id="deleteMemPic" parameterClass="map">
+		UPDATE MEMBER
+		SET MEM_PICTURE = NULL
+		WHERE MEM_ID = #mem_id#
+	</update>
+
+	
+	<select id="checkIden" parameterClass="map" resultClass="int">
+		SELECT IDEN_NUM
+		   FROM MEMBER
+		   WHERE MEM_ID = #mem_id#
+	</select>
+	
+	<select id="countMember" resultClass="int">
+		select count(*)
+		from member
+		where status_num=0
+	</select>
+		
+
+	<select id="reMember" resultClass="memberVO">
+		select * from member
+	</select>
+
+	<update id="updateLogin" parameterClass="map">
+		UPDATE MEMBER
+		SET MEM_LOGIN = '1'
+		WHERE MEM_ID = #mem_id#
+	</update>
+	<update id="updateLogout" parameterClass="map">
+		UPDATE MEMBER
+		SET MEM_LOGIN = '0'
+		<dynamic>
+		<isNotEmpty property="mem_id">
+		WHERE MEM_ID = #mem_id#
+		</isNotEmpty>
+		</dynamic>
+	</update>
+
+</sqlMap>

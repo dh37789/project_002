@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="contractFile">
+	<typeAlias alias="contractFileVO" type="kr.or.ddit.vo.Constract_fileVO"/>
+	<typeAlias alias="fileItemVO" type="kr.or.ddit.vo.FileItemVO"/>
+	<insert id="insertContractFile" parameterClass="fileItemVO">
+		INSERT INTO CONSTRACT_FILE(CONS_NUM, CONSFILE_NAME, CONSFILE_SAVE_NAME,
+		CONSFILE_TYPE, CONSFILE_SIZE, CONSFILE_DATE)
+		VALUES(#file_bo_no#, #file_name#, #file_save_name#, #file_content_type#,
+		#file_size#, SYSDATE)
+	</insert>	   
+	<select id="fileInfo" parameterClass="map" resultClass="contractFileVO">
+		SELECT * 
+		FROM CONSTRACT_FILE
+		WHERE CONS_NUM = #cons_num#
+	</select>
+</sqlMap>

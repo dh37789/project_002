@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="academic">
+	<typeAlias alias="academicVO" type="kr.or.ddit.vo.AcademicVO"/>
+
+	<select id="academicList" parameterClass="map" resultClass="academicVO">
+		SELECT * FROM ACADEMIC
+			WHERE MEM_ID = #mem_id#
+			AND AC_STATUS = 'y'
+		
+	</select>
+	
+	<select id="academicInfo" parameterClass="map" resultClass="academicVO">
+		SELECT * FROM ACADEMIC
+			WHERE MEM_ID = #mem_id#
+			AND AC_NUM = #ac_num#
+	</select>
+	
+	<update id="updateAcademic" parameterClass="academicVO">
+		UPDATE ACADEMIC
+		   SET AC_TYPE = #ac_type#
+		      ,AC_FINAL = #ac_final#
+		   	  ,AC_SCHOOL = #ac_school#
+		   	  ,AC_MAJOR = #ac_major#
+		   	  ,AC_IN = #ac_in#
+		   	  ,AC_OUT = #ac_out#
+		WHERE MEM_ID = #mem_id#
+		AND AC_NUM = #ac_num# 
+	</update>
+	
+	<insert id="insertAcademic" parameterClass="academicVO">
+		<selectKey keyProperty="ac_num" resultClass="String">
+			SELECT ACADEMIC_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO ACADEMIC(AC_NUM, MEM_ID, AC_TYPE, AC_FINAL, AC_SCHOOL, AC_MAJOR, AC_IN, AC_OUT)
+		VALUES(#ac_num#, #mem_id#, #ac_type#, #ac_final#, #ac_school#, #ac_major#, #ac_in#, #ac_out#)					  
+	</insert>
+	
+	<update id="deleteAcademic" parameterClass="map">
+		UPDATE ACADEMIC
+		   SET AC_STATUS = 'n'
+		WHERE MEM_ID = #mem_id#
+		AND AC_NUM = #ac_num#
+		
+	</update>
+	
+	<select id="academicCheck" parameterClass="map" resultClass="academicVO">
+		SELECT * FROM ACADEMIC
+			WHERE MEM_ID = #mem_id#
+		AND AC_STATUS = 'y'
+	</select>
+	
+</sqlMap>

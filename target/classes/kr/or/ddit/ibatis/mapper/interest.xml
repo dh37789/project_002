@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="interest">
+	<typeAlias alias="interestFreeVO" type="kr.or.ddit.vo.Intest_FreelancerVO"/>
+	<typeAlias alias="interestProjectVO" type="kr.or.ddit.vo.Interest_projectVO"/>
+	
+	<insert id="insertProject" parameterClass="map" >
+		<selectKey resultClass="string" keyProperty="inpr_num">
+			select TOTAL_SEQ.NEXTVAL from dual
+		</selectKey>
+		insert into interest_project values(#inpr_num#,#mem_id#,#pr_num#)
+	</insert>
+	
+	<insert id="insertFreelancer" parameterClass="map">
+		<selectKey resultClass="string" keyProperty="infr_num">
+			select TOTAL_SEQ.NEXTVAL from dual
+		</selectKey>
+		insert into intest_freelancer values(#infr_num#,#client#,#freelancer#)
+	</insert>
+	
+	<delete id="deleteProject" parameterClass="map">
+		delete from interest_project where inpr_num=#inpr_num#
+	</delete>
+	
+	<delete id="deleteFreelancer" parameterClass="map">
+		delete from intest_freelancer 
+		where infr_client=#client# and infr_free=#free#
+	</delete>
+	
+	<select id="selectProject" parameterClass="map" resultClass="interestProjectVO">
+		select *
+		from interest_project
+		where inpr_free=#mem_id#
+	</select>
+	
+	<select id="interestList" parameterClass="string" resultClass="string">
+		select inpr_project
+		from interest_project
+		where inpr_free=#mem_id#
+	</select>
+	
+	<select id="selectFreelancer" parameterClass="map" resultClass="interestFreeVO">
+		select *
+		from intest_freelancer
+		where infr_client=#mem_id#
+	</select>
+	
+	<select id="checkProject" parameterClass="map" resultClass="int">
+		select count(*)
+		from interest_project
+		where inpr_free=#mem_id#
+		and inpr_project=#pr_num# 
+		
+	</select>
+	<select id="checkFreelancer" parameterClass="map" resultClass="int">
+		select count(*)
+		from intest_freelancer
+		where infr_client=#client#
+		and infr_free=#free# 
+		
+	</select>
+	
+	<select id="selectInpr_num" parameterClass="map" resultClass="string">
+		select inpr_num
+		from interest_project
+		where inpr_free=#mem_id#
+		and inpr_project=#pr_num#
+	</select>
+	
+	<select id="freeList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT B.*
+		FROM(select ROWNUM RNUM, A.*
+		FROM (SELECT *
+		from member,intest_freelancer
+		where mem_id = infr_free
+		and infr_client=#client#
+		AND STATUS_NUM=0) A)B
+		  <![CDATA[ 
+	      WHERE B.RNUM <= #startCount# 
+	      	AND B.RNUM >= #endCount# 
+	      ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="countFree" parameterClass="map" resultClass="int">
+	SELECT count(*)
+		from member,intest_freelancer
+		where mem_id = infr_free
+		and infr_client=#client#
+		AND STATUS_NUM=0
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="portfolio">
+	<typeAlias alias="portfolioVO" type="kr.or.ddit.vo.PortfolioVO"/>
+	<typeAlias alias="portfolio_file_joinVO" type="kr.or.ddit.vo.Portfolio_file_joinVO"/>
+
+	<resultMap class="portfolioVO" id="portfolioMap">
+		<result property="po_num" column="po_num"/>
+		<result property="mem_id" column="mem_id"/>
+		<result property="po_cate_num" column="po_cate_num"/>
+		<result property="po_title" column="po_title"/>
+		<result property="po_content" column="po_content"/>
+		<result property="po_start" column="po_start"/>
+		<result property="po_end" column="po_end"/>
+		<result property="po_tech" column="po_tech"/>
+		<result property="po_status" column="po_status" />
+<!-- 		<result property="fivo" column="bo_no" select="fileitem.fileItemList"/> -->
+	</resultMap>
+	
+	
+	<select id="portfolioList" parameterClass="map" resultClass="portfolio_file_joinVO">
+		SELECT * 
+	        FROM PORTFOLIO P
+	        LEFT OUTER JOIN PORTFOLIO_FILE F ON P.PO_NUM = F.PO_NUM
+	        WHERE PO_STATUS = 'y'
+	        AND MEM_ID = #mem_id#
+	        ORDER BY P.PO_REPRE ASC
+	</select>
+	
+	<select id="portfolioInfo" parameterClass="map" resultClass="portfolioVO">
+		SELECT * 
+	        FROM PORTFOLIO
+	        WHERE MEM_ID = #mem_id#
+	        AND PO_NUM = #po_num#
+	</select>
+	
+	<select id="portfolioInfoJoin" parameterClass="map" resultClass="portfolio_file_joinVO">
+		SELECT * 
+	        FROM PORTFOLIO P
+	        LEFT OUTER JOIN PORTFOLIO_FILE F ON P.PO_NUM = F.PO_NUM
+	        WHERE POFILE_STATUS = 'y'
+	        AND P.PO_NUM = #po_num#
+	</select>
+	
+	<update id="updatePortfolio" parameterClass="portfolioVO">
+		UPDATE PORTFOLIO
+		   SET PO_TITLE = #po_title#
+		      ,PO_CATE_NUM = #po_cate_num#
+		   	  ,PO_CONTENT = #po_content#
+		   	  ,PO_START = #po_start#
+		   	  ,PO_END = #po_end#
+		   	  ,PO_TECH = #po_tech#
+		   	  ,PO_PERCENT = #po_percent#
+		   	  ,PO_EXPLAINFILE = #po_explainfile#
+		   	  ,PART_NUM = #part_num#
+		   	  <dynamic>
+				<isNotEmpty property="pr_num">
+				  ,PR_NUM = #pr_num# 
+				</isNotEmpty>
+			  </dynamic>
+		WHERE PO_NUM = #po_num# 
+		AND MEM_ID = #mem_id#
+	</update>
+	
+	<insert id="insertPortfolio" parameterClass="portfolioVO">
+			<selectKey keyProperty="po_num" resultClass="String">
+			SELECT PORTFOLIO_SEQ.NEXTVAL FROM DUAL
+			</selectKey>
+		INSERT INTO PORTFOLIO(po_num, mem_id, pr_num, po_cate_num, po_title,po_content,
+							  po_start, po_end, po_tech, part_num, po_percent, po_explainfile)
+		VALUES(#po_num#, #mem_id#, #pr_num#, #po_cate_num#, #po_title#, #po_content#,
+							  #po_start#, #po_end#, #po_tech#, #part_num#, #po_percent#, #po_explainfile#)					  
+	
+	</insert>
+	
+	<update id="deletePortfolio" parameterClass="map">
+		UPDATE PORTFOLIO
+		   SET PO_STATUS = 'n'
+		WHERE MEM_ID = #mem_id#
+		AND PO_NUM = #po_num#
+	</update>
+		   
+	<update id="updateRepre" parameterClass="map">
+		UPDATE PORTFOLIO
+		   SET PO_REPRE = '0'
+		WHERE PO_NUM = #po_num#
+<!-- 		WHERE MEM_ID = #mem_id# -->
+	</update>
+	
+	<update id="updateTotalRepre" parameterClass="map">
+		UPDATE PORTFOLIO
+		   SET PO_REPRE = '1'
+		WHERE MEM_ID = #mem_id#
+	</update>
+	
+	<select id="checkRepre" parameterClass="map" resultClass="portfolioVO">
+		SELECT * FROM PORTFOLIO
+			WHERE MEM_ID = #mem_id#
+		AND PO_REPRE = '0'
+	</select>
+	
+</sqlMap>

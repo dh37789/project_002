@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="license">
+	<typeAlias alias="licenseVO" type="kr.or.ddit.vo.LicenseVO"/>
+
+	<select id="licenseList" parameterClass="map" resultClass="licenseVO">
+		SELECT * FROM LICENSE
+			WHERE MEM_ID = #mem_id#
+			AND LI_STATUS = 'y'
+		
+	</select>
+	
+	<select id="licenseInfo" parameterClass="map" resultClass="licenseVO">
+		SELECT * FROM LICENSE
+			WHERE MEM_ID = #mem_id#
+			AND LI_NUM = #li_num#
+	</select>
+	
+	<update id="updateLicense" parameterClass="licenseVO">
+		UPDATE LICENSE
+		   SET LI_NAME= #li_name#
+		      ,LI_ORGANIZATION = #li_organization#
+		   	  ,LI_DATE = #li_date#
+		WHERE MEM_ID = #mem_id#
+		AND LI_NUM = #li_num# 
+	</update>
+	
+	<insert id="insertLicense" parameterClass="licenseVO">
+		<selectKey keyProperty="li_num" resultClass="String">
+			SELECT LICENSE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO LICENSE(LI_NUM, MEM_ID, LI_NAME, LI_ORGANIZATION, LI_DATE)
+		VALUES(#li_num#, #mem_id#, #li_name#, #li_organization#, #li_date#)					  
+	</insert>
+	
+	<update id="deleteLicense" parameterClass="map">
+		UPDATE LICENSE
+		   SET LI_STATUS = 'n'
+		WHERE MEM_ID = #mem_id#
+		AND LI_NUM = #li_num#
+		
+	</update>
+	
+	<select id="licenseCheck" parameterClass="map" resultClass="licenseVO">
+		SELECT * FROM LICENSE
+			WHERE MEM_ID = #mem_id#
+		AND LI_STATUS = 'y'
+	</select>
+	
+</sqlMap>

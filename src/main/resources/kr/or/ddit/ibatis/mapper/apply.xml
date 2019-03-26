@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="apply">
+	<typeAlias alias="applyVO" type="kr.or.ddit.vo.ApplyVO"/>
+	<select id="countApply" parameterClass="map" resultClass="int">
+		SELECT count(*)
+		from apply
+		where ap_project =#pr_num#
+	</select>
+	
+	<insert id="apply" parameterClass="map" >
+	<selectKey resultClass="int" keyProperty="ap_num">
+		select total_seq.nextval from dual
+	</selectKey>
+		insert into apply values (#ap_num#, #mem_id#,#pr_num#,#payment#,sysdate,#content#,0)
+	</insert>
+	<select id="conList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT *
+		FROM APPLY A INNER JOIN MEMBER M ON(A.AP_FREE = M.MEM_ID)
+        INNER JOIN CONSTRACT C ON(A.AP_FREE = C.CONS_FREE_ID AND C.CONS_PROJ_NUM = #pr_num#) 
+        AND AP_PROJECT = #pr_num#
+	</select>
+	
+	<select id="checkApply" parameterClass="map" resultClass="int">
+		select count(*)
+		from apply
+		where ap_project=#pr_num#
+		and ap_free = #mem_id#
+	</select>
+	<select id="applyInfo" parameterClass="map" resultClass="applyVO">
+		SELECT *
+		FROM APPLY
+		WHERE AP_PROJECT = #pr_num#
+		AND AP_FREE = #mem_id#
+	</select>
+	<select id="selectList" parameterClass="map" resultClass="java.util.HashMap">
+		 select rownum rnum, ap_num, ap_project, ap_payment, to_char(ap_date,'yyyy-mm-dd') ap_date, ap_content, ap_status,pr_title,to_char(pr_deadline,'yyyy-mm-dd') pr_deadline, pr_meeting,to_char(pr_start,'yyyy-mm-dd') pr_start, client, TRUNC(pr_deadline - SYSDATE, 0) dday, T.MT_TYPE, T.APMT_NUM
+		from apply A INNER JOIN project P ON(A.ap_project = P.pr_num) LEFT OUTER JOIN APMEETING T ON(A.AP_NUM = T.APMT_NUM)
+		where ap_free=#mem_id#
+		and pr_status = 2
+	</select>
+	<select id="appList" parameterClass="map" resultClass="java.util.HashMap">
+		SELECT *
+        FROM APPLY A INNER JOIN MEMBER M ON(A.AP_FREE = M.MEM_ID) LEFT OUTER JOIN APMEETING T ON(A.AP_NUM = T.APMT_NUM)
+        WHERE A.AP_PROJECT = #pr_num#
+	</select>
+	<select id="appInfo" parameterClass="map" resultClass="applyVO">
+		SELECT *
+		FROM APPLY
+		WHERE AP_NUM = #ap_num#
+	</select>
+	<update id="updateStatus" parameterClass="map">
+		UPDATE APPLY
+		SET AP_STATUS = '1' 
+		WHERE AP_NUM = #ap_num#
+	</update>
+	<update id="frUpdateStatus" parameterClass="map">
+		UPDATE APPLY
+		SET AP_STATUS = '2' 
+		WHERE AP_NUM = #apmt_num#
+	</update>
+	<update id="sorryApply" parameterClass="map">
+		UPDATE APPLY
+		SET AP_STATUS = 'n'
+		WHERE AP_NUM = #ap_num#
+	</update>
+	<update id="okayApply" parameterClass="map">
+		UPDATE APPLY
+		SET AP_STATUS = 'y'
+		WHERE AP_NUM = #ap_num#
+	</update>
+	<update id="frCancelStatus" parameterClass="map">
+		UPDATE APPLY
+		SET AP_STATUS = '0' 
+		WHERE AP_NUM = #apmt_num#
+	</update>
+</sqlMap>

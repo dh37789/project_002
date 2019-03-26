@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+	<properties resource="kr/or/ddit/ibatis/config/SqlMapConfig.properties" />
+	<settings cacheModelsEnabled="true" enhancementEnabled="true"
+		lazyLoadingEnabled="true" maxRequests="32" maxSessions="10"
+		maxTransactions="5" useStatementNamespaces="true" />
+
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/member.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/contract.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/memberIden.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/memberStatus.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/project.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/category.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/free_type.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/project_notice.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/project_notice_file.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/notice.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/work.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/language.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/project_tech.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/apply.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/portfolio.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/portfolio_file.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/notice_file.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/technique.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/interest.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/test.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/qna.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/qna_file.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/meeting.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/academic.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/license.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/career.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/board.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/board_file.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/board_reply.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/projectOutput.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/table.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/diagram.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/contractFile.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/bank_account.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/schedule.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/sign.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/project_file.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/apmeeting.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/chat.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/evalation.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/message.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/alarm.xml"/>
+	<sqlMap resource="kr/or/ddit/ibatis/mapper/project_reply.xml"/>
+</sqlMapConfig>
+
+
+
+
+
+

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="project_notice_file">
+	<typeAlias alias="project_notice_fileVO" type="kr.or.ddit.vo.Project_notice_fileVO"/>
+	<insert id="insertNtcFile" parameterClass="project_notice_fileVO">
+		<selectKey keyProperty="prnofile_num">
+			SELECT PROJECT_NOTICE_FILE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>		
+			INSERT INTO PROJECT_NOTICE_FILE(PRNOFILE_NUM,
+								 PRNO_NUM,
+								 PRNOFILE_NAME,
+								 PRNOFILE_SAVE_NAME,
+								 PRNOFILE_TYPE,
+								 PRNO_SIZE,
+								 PRNO_DATE)
+						  VALUES(#prnofile_num#,
+								 #prno_num#,
+								 #prnofile_name#,
+								 #prnofile_save_name#,
+								 #prnofile_type#,
+								 #prno_size#,
+								 SYSDATE)
+	</insert>
+	<select id="boardFileInfo" parameterClass="map" resultClass="project_notice_fileVO">
+		SELECT * 
+		FROM PROJECT_NOTICE_FILE
+		WHERE PRNO_NUM = #prno_num#
+		AND PRNOFILE_STATUS = 'y'
+	</select>
+	<update id="deleteFile" parameterClass="map">
+		UPDATE PROJECT_NOTICE_FILE
+		SET PRNOFILE_STATUS = 'n'
+		WHERE PRNOFILE_NUM = #prnofile_num#
+	</update>
+	
+	<select id="fileInfo" resultClass="project_notice_fileVO" parameterClass="map">
+		SELECT *
+		FROM PROJECT_NOTICE_FILE
+		WHERE PRNOFILE_NUM = #prnofile_num#
+	</select>
+</sqlMap>

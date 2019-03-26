@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="chat">
+
+	<insert id="insertChat" parameterClass="map">
+		<selectKey resultClass="string" keyProperty="chat_num">
+			select CHAT_SEQ.NEXTVAL from dual
+		</selectKey>
+		insert into chat
+		values (#chat_num#,#mem_id#,#pr_num#,#content#,sysdate,#ip#)
+	</insert>
+	
+	<select id="selectChat" parameterClass="map" resultClass="kr.or.ddit.vo.ChatVO">
+		select *
+		from chat
+		where pr_num =#pr_num#
+		order by chat_date
+	</select>
+
+</sqlMap>

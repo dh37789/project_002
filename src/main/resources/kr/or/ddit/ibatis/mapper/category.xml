@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="category">
+	<typeAlias alias="categoryVO" type="kr.or.ddit.vo.CategoryVO"/>
+	<typeAlias alias="freetypeVO" type="kr.or.ddit.vo.Free_TypeVO"/>
+	
+	<select id="categoryStatus" parameterClass="map" resultClass="categoryVO">
+		SELECT *  
+		FROM CATEGORY
+		WHERE CATE_NUM = #cate_num#
+	</select>
+	
+	<select id="selectCategory" parameterClass="map" resultClass="categoryVO">
+		SELECT cate_num, cate_category,ftype_name category,cate_detail  
+		FROM CATEGORY,free_type
+		WHERE CATE_NUM = #cate_num#
+		and ftype_num = cate_category
+	</select>
+	
+	<select id="cateInfo" parameterClass="map" resultClass="categoryVO">
+		SELECT *
+		FROM CATEGORY
+		WHERE CATE_NUM = #cate_num#
+	</select>
+	
+	<select id="category" resultClass="freetypeVO">
+	select * 
+	from free_type
+	</select>
+	
+	<select id="detail" resultClass="java.util.HashMap" parameterClass="string">
+	select cate_detail,cate_num 
+	from free_type, category
+	where ftype_num=category.CATE_CATEGORY
+	and ftype_num=#ftype_num#
+	order by cate_num
+	</select>
+	
+	
+	
+</sqlMap>

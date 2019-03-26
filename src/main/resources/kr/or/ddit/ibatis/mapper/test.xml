@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="test">
+	<typeAlias alias="testVO" type="kr.or.ddit.vo.TestVO"/>
+	
+	<sql id="searchCondition">
+		<!-- AND는 prepend="AND" 쿼리의 AND를 없애준다.(자동으로 붙여준다.) -->
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="total">
+						TEST_TITLE LIKE '%'||#search_data#||'%'
+					OR 	MEM_ID LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="title">
+						TEST_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="writer">
+						MEM_ID LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<insert id="insertTest" parameterClass="testVO">
+		<selectKey keyProperty="test_num">
+		SELECT TEST_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO TEST(TEST_NUM, TEST_PR_NUM, MEM_ID, TEST_TITLE, TEST_TYPE, TEST_STATUS, TEST_CONTENT, TEST_DATE)
+		VALUES(#test_num#, #test_pr_num#, #mem_id#, #test_title#, #test_type#, #test_status#, #test_content#, SYSDATE)
+	</insert>
+	<select id="boardList" parameterClass="map" resultClass="testVO">
+		SELECT B.*
+		FROM(SELECT ROWNUM rnum, A.*
+    	FROM (SELECT * 
+		FROM TEST
+		WHERE TEST_PR_NUM = #test_pr_num#
+		AND TEST_STATUS != 4
+		<include refid="searchCondition"/>
+		ORDER BY TEST_NUM ASC) A) B
+        <![CDATA[
+		WHERE B.RNUM <= #start#
+		  AND B.RNUM >= #end#
+	    ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	<select id="boardInfo" parameterClass="map" resultClass="testVO">
+		SELECT * 
+		FROM TEST
+		WHERE TEST_NUM = #test_num#
+	</select>
+	<update id="boardUpdate" parameterClass="testVO">
+		UPDATE TEST
+		SET TEST_TITLE = #test_title#,
+			TEST_CONTENT = #test_content#,
+			TEST_TYPE = #test_type#,
+			TEST_STATUS = #test_status#,
+			TEST_DATE = SYSDATE
+		WHERE TEST_NUM = #test_num# 
+	</update>
+	<update id="boardDelete" parameterClass="map">
+		UPDATE TEST
+		SET TEST_STATUS = '4'
+		WHERE TEST_NUM = #test_num# 
+	</update>
+	<select id="totalCount" parameterClass="map" resultClass="int"> 
+		SELECT COUNT(*)
+		FROM TEST
+		WHERE TEST_PR_NUM = #test_pr_num#
+		AND TEST_STATUS != 4
+		<include refid="searchCondition"/>
+	</select>
+</sqlMap>

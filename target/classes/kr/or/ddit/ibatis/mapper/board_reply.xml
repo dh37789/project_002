@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="bore">
+<typeAlias alias="board_replyVO" type="kr.or.ddit.vo.Board_replyVO"/>
+<resultMap class="board_replyVO" id="boardMap">
+		<result property="bore_num" column="bore_num"/>
+		<result property="mem_id" column="mem_id"/>
+		<result property="bo_num" column="bo_num"/>
+		<result property="bore_content" column="bore_content"/>
+		<result property="bore_date" column="bore_date" />
+		<result property="bore_status" column="bore_status"/>
+		<result property="bore_group" column="bore_group"/>
+		<result property="bore_depth" column="bore_depth"/>
+		<result property="bore_seq" column="bore_seq"/>
+	</resultMap>
+	
+	<sql id="selectAll">
+		SELECT *
+		  FROM BOARD_REPLY
+	</sql>
+	
+	<select id="boreList" resultClass="board_replyVO" parameterClass="map">
+		SELECT B.*
+		FROM
+		(SELECT ROWNUM rnum, A.*
+		  FROM (<include refid="selectAll"/>
+		  		WHERE BO_NUM = #bo_num#
+		  		ORDER BY BORE_GROUP,BORE_SEQ DESC)A) B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		  AND B.RNUM >= #endCount#
+		 ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	<insert id="insertBore" parameterClass="board_replyVO">
+		<selectKey keyProperty="bore_num" resultClass="String">
+			SELECT BOARD_REPLY_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO 
+		BOARD_REPLY(BORE_NUM,BO_NUM, MEM_ID,  BORE_CONTENT,BORE_DATE,BORE_GROUP)
+		VALUES(#bore_num#,#bo_num#, #mem_id#, #bore_content#,SYSDATE,#bore_num#)
+	</insert>
+	
+	<update id="updateBore" parameterClass="board_replyVO">
+		UPDATE BOARD_REPLY
+		   SET
+		   	   BORE_CONTENT = #bore_content#
+		 WHERE BORE_NUM = #bore_num#
+	</update>
+	
+	<update id="deleteBore" parameterClass="string">
+		UPDATE BOARD_REPLY
+		   SET
+		   	   BORE_STATUS = 'n'
+		 WHERE BORE_NUM = #bore_num#
+	</update>
+	
+	<select id="totalCount" resultClass="int" parameterClass="map">
+		SELECT COUNT(BORE_NUM)
+		  FROM BOARD_REPLY
+		  WHERE BO_NUM = #bo_num#
+	</select>
+	
+	<update id="updateSeq" parameterClass="board_replyVO">
+		UPDATE BOARD_REPLY
+		   SET BORE_SEQ = BORE_SEQ +1
+		 WHERE BORE_GROUP = #bore_group#
+		 <![CDATA[
+		   AND BORE_SEQ > #bore_seq#
+		  ]]>
+	</update>
+	
+	<select id="incrementSeq" parameterClass="board_replyVO" resultClass="string">
+		SELECT MAX(BORE_SEQ) + 1
+		  FROM BOARD_REPLY
+		 WHERE BORE_GROUP = #bore_group#
+	</select>
+		
+	<insert id="insertBoreReply" parameterClass="board_replyVO">
+		<selectKey keyProperty="bore_num">
+			SELECT BOARD_REPLY_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+	INSERT INTO
+	BOARD_REPLY(
+				BO_NUM,
+				BORE_NUM, 
+				MEM_ID, 
+				BORE_CONTENT,
+				BORE_GROUP, 
+				BORE_SEQ, 
+				BORE_DEPTH,
+				BORE_DATE
+			)
+	  VALUES(
+	  			#bo_num#,
+	  			#bore_num#, 
+	  			#mem_id#, 
+	  			#bore_content#, 	
+	  			#bore_group#, 
+	  			#bore_seq#, 
+	  			#bore_depth#,
+	  			SYSDATE
+	  		)
+	</insert>
+	
+</sqlMap>

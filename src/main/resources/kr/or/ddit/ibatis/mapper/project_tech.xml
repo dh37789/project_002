@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="project_tech">
+	<typeAlias alias="project_techVO" type="kr.or.ddit.vo.Project_techVO"/>
+	<statement id="techList" resultClass="project_techVO">
+		SELECT * 
+		FROM project_tech
+		WHERE PROJECT_NUM = #PR_NUM#
+	</statement>
+	
+	<select id="project_techList" parameterClass="map" resultClass="java.util.HashMap">
+		select *
+		from project_tech,language
+		where project_num=#pr_num#
+		and tech_num=lan_num
+	</select>
+	
+	<insert id="insertTech" parameterClass="map">
+		<selectKey keyProperty="lan_num" resultClass="string">
+		select lan_num from language where lan_name=#name#
+		</selectKey>
+		insert into project_tech values (TOTAL_SEQ.NEXTVAL,#pr_num#,#lan_num#)
+	</insert>
+	
+	<delete id="deleteTech" parameterClass="map">
+	delete from project_tech where project_num=#pr_num#
+	
+	</delete>
+</sqlMap>

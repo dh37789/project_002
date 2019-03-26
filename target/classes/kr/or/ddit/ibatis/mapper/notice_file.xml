@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="notice_file">
+	<typeAlias alias="notice_fileVO" type="kr.or.ddit.vo.Notice_fileVO" />
+	<insert id="insertFile" parameterClass="notice_fileVO">
+		<selectKey keyProperty="nofile_num">
+			SELECT
+			NOTICE_FILE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO NOTICE_FILE(NOFILE_NUM,
+		NOFILE_NOTI_NUM,
+		NOFILE_NAME,
+		NOFILE_SAVE_NAME,
+		NOFILE_TYPE,
+		NOFILE_SIZE,
+		NOFILE_DATE,
+		NOFILE_STATUS,
+		NOFILE_HIT)
+		VALUES(#nofile_num#,
+		#nofile_noti_num#,
+		#nofile_name#,
+		#nofile_save_name#,
+		#nofile_type#,
+		#nofile_size#,
+		SYSDATE,
+		'y',
+		0)
+	</insert>
+	<select id="FileInfo" parameterClass="map"
+		resultClass="notice_fileVO">
+		SELECT *
+		FROM NOTICE_FILE
+		WHERE NOFILE_NOTI_NUM = #nofile_noti_num#
+		AND NOFILE_STATUS = 'y'
+	</select>
+	<update id="deleteFile" parameterClass="map">
+		UPDATE
+		NOTICE_FILE
+		SET NOFILE_STATUS = 'n'
+		WHERE NOFILE_NUM =
+		#nofile_num#
+	</update>
+</sqlMap>

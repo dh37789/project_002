@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="board">
+<typeAlias alias="BoardVO" type="kr.or.ddit.vo.BoardVO"/>
+<resultMap class="boardVO" id="boardMap">
+		<result property="bo_num" column="bo_num"/>
+		<result property="bo_title" column="bo_title"/>
+		<result property="mem_id" column="mem_id"/>
+		<result property="bo_content" column="bo_content"/>
+		<result property="bo_hit" column="bo_hit"/>
+		<result property="bo_date" column="bo_date" />
+		<result property="bo_status" column="bo_status"/>
+	</resultMap>
+	
+	<sql id="selectAll">
+		SELECT *
+		  FROM BOARD
+	</sql>
+	
+	<sql id="searchCondition">
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_keyword" open="(" close=") and BO_STATUS = 'y'">
+				<isEqual property="search_keycode" compareValue="TOTAL">
+						BO_TITLE LIKE '%'||#search_keyword#||'%'
+					 OR BO_CONTENT LIKE '%'||#search_keyword#||'%'
+					 OR	MEM_ID LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="TITLE">
+						BO_TITLE LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="CONTENT">
+					    BO_CONTENT LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="WRITER">
+					 	MEM_ID LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+			</isNotEmpty>
+			<isEmpty  property="search_keyword" open="(" close=") and BO_STATUS = 'y'">
+				BO_STATUS ='y'
+			</isEmpty>
+		</dynamic>
+	</sql>
+	
+	<select id="boardList" resultClass="boardVO" parameterClass="map">
+		SELECT B.*
+		FROM
+		(SELECT ROWNUM rnum, A.*
+		  FROM (<include refid="selectAll"/>		 
+		  		<include refid="searchCondition"/>
+		  		ORDER BY BO_DATE)A
+		  		WHERE BO_STATUS = 'y')B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		  AND B.RNUM >= #endCount#
+		 ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="boardView" resultMap="boardMap" parameterClass="map">
+		<include refid="selectAll"/>
+		 WHERE BO_NUM = #bo_num#
+	</select>
+	
+	<insert id="insertBoard" parameterClass="boardVO">
+		<selectKey keyProperty="bo_num" resultClass="String">
+			SELECT BOARD_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO 
+		BOARD(BO_NUM, BO_TITLE, MEM_ID,  BO_CONTENT,BO_DATE)
+		VALUES(#bo_num#, #bo_title#, #mem_id#, #bo_content#,SYSDATE)
+	</insert>
+	
+	<update id="updateBoard" parameterClass="boardVO">
+		UPDATE BOARD
+		   SET
+		   	   BO_TITLE = #bo_title#,
+		   	   BO_CONTENT = #bo_content#
+		 WHERE BO_NUM = #bo_num#
+	</update>
+	
+	<update id="deleteBoard" parameterClass="string">
+		UPDATE BOARD
+		   SET
+		   	   BO_STATUS = 'n'
+		 WHERE BO_NUM = #bo_num#
+	</update>
+	
+	<update id="boardHit" parameterClass="map">
+		UPDATE BOARD
+		   SET
+		   	   BO_HIT = BO_HIT+1
+		 WHERE BO_NUM = #bo_num#	
+	</update>
+	
+	<select id="totalCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(BO_NUM)
+		  FROM BOARD
+		 <include refid="searchCondition"/>
+	</select>
+	
+	<update id="deleteBoardre" parameterClass="String">
+		UPDATE BOARD
+		   SET
+		   	   BO_STATUS = 'd'
+		 WHERE BO_NUM = #bo_num#
+	</update>
+	
+</sqlMap>

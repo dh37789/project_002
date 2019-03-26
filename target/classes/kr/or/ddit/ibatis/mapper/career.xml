@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="career">
+	<typeAlias alias="CareerVO" type="kr.or.ddit.vo.CareerVO"/>
+
+	<select id="careerList" parameterClass="map" resultClass="CareerVO">
+		SELECT * FROM CAREER
+			WHERE MEM_ID = #mem_id#
+			AND CA_STATUS = 'y'
+		
+	</select>
+	
+	<select id="careerInfo" parameterClass="map" resultClass="careerVO">
+		SELECT * FROM CAREER
+			WHERE MEM_ID = #mem_id#
+			AND CA_NUM = #ca_num#
+	</select>
+	
+	<update id="updateCareer" parameterClass="careerVO">
+		UPDATE CAREER
+		   SET CA_COMPANY = #ca_company#
+		      ,CA_IN = #ca_in#
+		   	  ,CA_OUT = #ca_out#
+		   	  ,CA_DEPARTMENT = #ca_department#
+		   	  ,CA_POSITION = #ca_position#
+		WHERE MEM_ID = #mem_id#
+		AND CA_NUM = #ca_num# 
+	</update>
+	
+	<insert id="insertCareer" parameterClass="careerVO">
+		<selectKey keyProperty="ca_num" resultClass="String">
+			SELECT CAREER_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO CAREER(CA_NUM, MEM_ID, CA_COMPANY, CA_IN, CA_OUT, CA_DEPARTMENT, CA_POSITION)
+		VALUES(#ca_num#, #mem_id#, #ca_company#, #ca_in#, #ca_out#, #ca_department#, #ca_position#)					  
+	</insert>
+	
+	<update id="deleteCareer" parameterClass="map">
+		UPDATE CAREER
+		   SET CA_STATUS = 'n'
+		WHERE MEM_ID = #mem_id#
+		AND CA_NUM = #ca_num#
+		
+	</update>
+	
+	<select id="careerCheck" parameterClass="map" resultClass="careerVO">
+		SELECT * FROM CAREER
+			WHERE MEM_ID = #mem_id#
+		AND CA_STATUS = 'y'
+	</select>
+	
+</sqlMap>

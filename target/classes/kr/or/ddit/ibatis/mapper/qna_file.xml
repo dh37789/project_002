@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="qna_file"><typeAlias alias="Qna_fileVO" type="kr.or.ddit.vo.Qna_fileVO"/>
+<insert id="insertFile" parameterClass="qna_fileVO">
+	<selectKey keyProperty="qafile_num">
+			SELECT
+			QNA_FILE_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO QNA_FILE(QAFILE_NUM,
+		QAFILE_QA_NUM,
+		QAFILE_NAME,
+		QAFILE_SAVE_NAME,
+		QAFILE_TYPE,
+		QAFILE_SIZE,
+		QAFILE_DATE,
+		QAFILE_STATUS)
+		VALUES(#qafile_num#,
+		#qafile_qa_num#,
+		#qafile_name#,
+		#qafile_save_name#,
+		#qafile_type#,
+		#qafile_size#,
+		SYSDATE,
+		'y')
+</insert>
+	<select id="FileInfo" parameterClass="map"
+		resultClass="qna_fileVO">
+		SELECT *
+		FROM QNA_FILE
+		WHERE QAFILE_QA_NUM = #qafile_qa_num#
+		AND QAFILE_STATUS = 'y'
+	</select>
+	<update id="deleteFile" parameterClass="map">
+		UPDATE
+		QNA_FILE
+		SET QAFILE_STATUS = 'n'
+		WHERE QAFILE_NUM =
+		#qafile_num#
+	</update>
+</sqlMap>

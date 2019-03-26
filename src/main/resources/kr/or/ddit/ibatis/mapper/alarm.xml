@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="alarm">
+	<typeAlias alias="alarmVO" type="kr.or.ddit.vo.AlarmVO"/>
+	<typeAlias alias="alarmMessageVO" type="kr.or.ddit.vo.Alarm_messageVO"/>
+
+	<select id="selectAlarm" parameterClass="map" resultClass="alarmVO">
+		SELECT * 
+		FROM ALARM
+		WHERE MEM_ID = #mem_id#
+		
+	</select>
+	
+	<update id="updateAlarm" parameterClass="map">
+		UPDATE ALARM
+		   SET AR_PH_PROJECT=#ph_project#,
+			   AR_MA_PROJECT=#ma_project#,
+			   AR_PH_APPLY=#ph_apply#,
+			   AR_MA_APPLY=#ma_apply#,
+			   AR_PH_CON=#ph_con#,
+			   AR_MA_CON=#ma_con#
+		WHERE MEM_ID = #mem_id#
+	</update>
+	
+	<insert id="insertAlarm" parameterClass="map">
+		INSERT INTO ALARM
+		VALUES(#mem_id#,'y','y','y','y','y','y')
+	</insert>
+	
+	<insert id="insertAlarmMessage" parameterClass="map">
+	<selectKey keyProperty="armsg_num" resultClass="int">
+		select total_seq.nextval from dual
+	</selectKey>
+		insert into alarm_message
+		values
+		(#armsg_num#,null,#client#,#content#,0,'y')
+	</insert>
+	
+	<select id="selectAlarmMessage" parameterClass="map" resultClass="alarmMessageVO">
+		select *
+		from alarm_message
+		where mem_id=#mem_id#
+		and ARMSG_STAUTS='y'
+		order by armsg_hit desc
+	</select>
+	
+	<update id="hitArmsg" parameterClass="map">
+		update alarm_message
+		set armsg_hit= armsg_hit+1
+		where armsg_num=#armsg_num#
+	</update>
+	
+	<update id="checkArmsg" parameterClass="string">
+		update alarm_message
+		set ARMSG_STAUTS='n'
+		where armsg_num=#armsg_num#
+	</update>
+	
+	<select id="countAlarm" resultClass="int" parameterClass="string">
+		select count(*)
+		from alarm_message
+		where mem_id=#mem_id#
+		and ARMSG_STAUTS='y'
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="apmeeting">
+	<typeAlias alias="apmeetingVO" type="kr.or.ddit.vo.ApmeetingVO"/>
+	<insert id="insertAppMeeting" parameterClass="apmeetingVO">
+		INSERT INTO APMEETING(APMT_NUM,MT_FROM,MT_TO,MT_DATE,MT_TIME,
+			MT_MEMO,MT_TYPE,MT_TO_ACCEPT)
+			VALUES(#apmt_num#,#mt_from#,#mt_to#,#mt_date#,SYSDATE,
+			#mt_memo#,#mt_type#,'0')
+	</insert>
+	<select id="mtInfo" parameterClass="map" resultClass="apmeetingVO">
+		SELECT *
+		FROM APMEETING
+		WHERE APMT_NUM = #ap_num#
+	</select>
+	
+	<update id="updateMtStatus" parameterClass="map">
+		UPDATE APMEETING
+		SET MT_TO_ACCEPT = '1'
+		WHERE APMT_NUM = #apmt_num#
+	</update>
+	
+	<delete id="deleteMt" parameterClass="map">
+		DELETE FROM APMEETING
+		WHERE APMT_NUM =  #apmt_num#
+	</delete>
+</sqlMap>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="prre">
+<typeAlias alias="project_reply" type="kr.or.ddit.vo.Project_reply"/>
+<resultMap class="project_reply" id="projectMap">
+		<result property="prre_num" column="prre_num"/>
+		<result property="mem_id" column="mem_id"/>
+		<result property="pr_num" column="pr_num"/>
+		<result property="prre_content" column="prre_content"/>
+		<result property="prre_date" column="prre_date" />
+		<result property="prre_status" column="prre_status"/>
+		<result property="prre_group" column="prre_group"/>
+		<result property="prre_depth" column="prre_depth"/>
+		<result property="prre_seq" column="prre_seq"/>
+		<result property="prre_pass" column="prre_pass"/>
+	</resultMap>
+	
+	<sql id="selectAll">
+		SELECT *
+		  FROM PROJECT_REPLY
+	</sql>
+	
+	<select id="prreList" resultClass="project_reply" parameterClass="map">
+		SELECT B.*
+		FROM
+		(SELECT ROWNUM rnum, A.*
+		  FROM (<include refid="selectAll"/>
+		  		WHERE PR_NUM = #pr_num#
+		  		ORDER BY PRRE_GROUP,PRRE_SEQ ASC)A) B
+		ORDER BY B.RNUM ASC
+	</select>
+	
+	<insert id="insertPrre" parameterClass="project_reply">
+		<selectKey keyProperty="prre_num" resultClass="String">
+			SELECT PROJECT_REPLY_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO 
+		PROJECT_REPLY(PRRE_NUM, PR_NUM, MEM_ID, PRRE_PASS, PRRE_CONTENT, PRRE_DATE, PRRE_GROUP)
+		VALUES(#prre_num#, #pr_num#, #mem_id#, #prre_pass#, #prre_content#, SYSDATE, #prre_num#)
+	</insert>
+	
+	<update id="updatePrre" parameterClass="project_reply">
+		UPDATE PROJECT_REPLY
+		   SET
+		   	   PRRE_CONTENT = #prre_content#
+		 WHERE PRRE_NUM = #prre_num#
+	</update>
+	
+	<update id="deletePrre" parameterClass="string">
+		UPDATE PROJECT_REPLY
+		   SET
+		   	   PRRE_STATUS = 'n'
+		 WHERE PRRE_NUM = #prre_num#
+	</update>
+	
+	<select id="totalCount" resultClass="int" parameterClass="map">
+		SELECT COUNT(PRRE_NUM)
+		  FROM PROJECT_REPLY
+		  WHERE PR_NUM = #pr_num#
+	</select>
+	
+	<update id="updateSeq" parameterClass="project_reply">
+		UPDATE PROJECT_REPLY
+		   SET PRRE_SEQ = PRRE_SEQ +1
+		 WHERE PRRE_GROUP = #prre_group#
+		 <![CDATA[
+		   AND PRRE_SEQ > #prre_seq#
+		  ]]>
+	</update>
+	
+	<select id="incrementSeq" parameterClass="project_reply" resultClass="string">
+		SELECT MAX(PRRE_SEQ) + 1
+		  FROM PROJECT_REPLY
+		 WHERE PRRE_GROUP = #prre_group#
+	</select>
+		
+	<insert id="insertPrreReply" parameterClass="project_reply">
+		<selectKey keyProperty="prre_num">
+			SELECT PROJECT_REPLY_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+	INSERT INTO
+	PROJECT_REPLY(
+				PR_NUM,
+				PRRE_NUM, 
+				MEM_ID, 
+				PRRE_CONTENT,
+				PRRE_GROUP, 
+				PRRE_SEQ, 
+				PRRE_DEPTH,
+				PRRE_DATE,
+				PRRE_PASS
+			)
+	  VALUES(
+	  			#pr_num#,
+	  			#prre_num#, 
+	  			#mem_id#, 
+	  			#prre_content#, 	
+	  			#prre_group#, 
+	  			#prre_seq#, 
+	  			#prre_depth#,
+	  			SYSDATE,
+	  			#prre_pass#
+	  		)
+	</insert>
+	
+</sqlMap>

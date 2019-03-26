@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="tableData">
+	<typeAlias alias="tableDataVO" type="kr.or.ddit.vo.Table_dataVO"/>
+	<select id="requestInfo" parameterClass="map" resultClass="tableDataVO">
+		SELECT *
+		FROM TABLE_DATA
+		WHERE OUTPUT_NUM = #output_num#
+		AND PR_NUM = #pr_num#
+	</select>
+	
+	<insert id="insertTable" parameterClass="tableDataVO">
+	<selectKey keyProperty="data_num">
+		SELECT TABLE_DATA_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO TABLE_DATA(DATA_NUM, PR_NUM, DATA_DATA, OUTPUT_NUM,
+  					 MEM_ID, DATA_DATE)
+  		VALUES(#data_num#, #pr_num#, #data_data#, #output_num#,
+  					#mem_id#, SYSDATE)
+	</insert>
+	<update id="updateTable" parameterClass="tableDataVO">
+		UPDATE TABLE_DATA
+		SET DATA_DATA = #data_data#,
+			DATA_DATE = SYSDATE,
+			MEM_ID = #mem_id#
+		WHERE DATA_NUM = #data_num#
+	</update>
+</sqlMap>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="meeting">
+	<typeAlias alias="meetingVO" type="kr.or.ddit.vo.MeetingVO"/>
+	
+	<sql id="searchCondition">
+		<!-- AND는 prepend="AND" 쿼리의 AND를 없애준다.(자동으로 붙여준다.) -->
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="total">
+						MT_REASON LIKE '%'||#search_data#||'%'
+					OR 	MT_FROM LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="title">
+						MT_REASON LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="to">
+					 	MT_FROM LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<select id="boardList" parameterClass="map" resultClass="meetingVO">
+		SELECT * 
+		FROM MEETING
+		WHERE PR_NUM = #pr_num#
+		AND MT_STATUS = 'y'
+		<include refid="searchCondition"/>
+		ORDER BY MT_NUM DESC 
+		
+	</select>
+	
+	<select id="boardCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*) 
+		FROM MEETING
+		WHERE PR_NUM = #pr_num#
+		AND MT_STATUS = 'y'
+		<include refid="searchCondition"/>
+	</select>
+	
+	<select id="boardInfo" parameterClass="map" resultClass="meetingVO">
+		SELECT *
+		FROM MEETING
+		WHERE MT_NUM = #mt_num#
+	</select>
+	
+	<insert id="insertMeeting" parameterClass="meetingVO">
+	<selectKey keyProperty="mt_num">
+		SELECT MEETING_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO MEETING (MT_NUM, MT_FROM, MT_TO, PR_NUM, MT_DATE,
+							MT_TIME, MT_REASON, MT_TYPE)
+		VALUES (#mt_num#, #mt_from#, #mt_to#, #pr_num#, SYSDATE, #mt_time#,
+				#mt_reason#, #mt_type#)
+	</insert>
+	
+	<update id="meetingAccept" parameterClass="map">
+		UPDATE MEETING
+		SET MT_TO_ACCEPT = '1'
+		WHERE MT_NUM = #mt_num#
+	</update>
+	
+	<update id="meetingReject" parameterClass="map">
+		UPDATE MEETING
+		SET MT_TO_ACCEPT = '2'
+		WHERE MT_NUM = #mt_num#
+	</update>
+	
+	<select id="acceptChk" parameterClass="map" resultClass="String">
+		SELECT MT_TO_ACCEPT
+		FROM MEETING
+		WHERE MT_NUM = #mt_num#
+	</select>
+	
+	<update id="deleteMeeting" parameterClass="map">
+		UPDATE MEETING
+		SET MT_STATUS = 'n'
+		WHERE MT_NUM = #mt_num# 
+	</update>
+	
+	<select id="meetSchedule" parameterClass="map" resultClass="meetingVO">
+		SELECT MT_TO, MT_REASON, MT_DATE
+		FROM MEETING
+		WHERE MT_STATUS = 'y'
+		AND MT_TO_ACCEPT = '2'
+		AND MT_FROM = #mem_id#
+	
+	</select>
+</sqlMap>

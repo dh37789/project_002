@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="projectOutput">
+	<typeAlias alias="project_outputVO" type="kr.or.ddit.vo.Project_outputVO" />
+	<insert id="insertRequestFile" parameterClass="project_outputVO">
+	<selectKey keyProperty="prout_num">
+		SELECT PROJECT_OUTPUT_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO PROJECT_OUTPUT(PROUT_NUM, MEM_ID, PR_NUM, PROUT_NAME,
+		PROUT_SAVE_NAME, PROUT_TYPE, PROUT_SIZE, PROUT_DATE, OUPUT_NUM)
+		VALUES(#prout_num#, #mem_id#, #pr_num#, #prout_name#,
+		#prout_save_name#, #prout_type#, #prout_size#, SYSDATE, #ouput_num#)
+	</insert>
+	
+	<select id="fileInfo" parameterClass="map" resultClass="project_outputVO">
+		SELECT * 
+		FROM PROJECT_OUTPUT
+		WHERE PR_NUM = #pr_num#
+		AND OUPUT_NUM = #ouput_num#
+		AND PROUT_STATUS = 'y'
+	</select>
+	
+	<update id="deleteFile" parameterClass="map">
+		UPDATE PROJECT_OUTPUT
+		SET PROUT_STATUS = 'n'
+		WHERE PROUT_NUM = #prout_num#
+	</update>
+	
+	<select id="downloadFile" parameterClass="map" resultClass="project_outputVO">
+		SELECT *
+		FROM PROJECT_OUTPUT
+		WHERE PROUT_NUM = #prout_num#
+	</select>
+</sqlMap>

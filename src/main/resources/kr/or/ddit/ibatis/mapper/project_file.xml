@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="project_file">
+<typeAlias alias="pr_fileVO" type="kr.or.ddit.vo.Project_fileVO"/>
+
+
+
+	<insert id="insertFile" parameterClass="pr_fileVO">
+			INSERT INTO PROJECT_FILE
+			VALUES(
+			#pr_num#,
+			#prfile_name#,
+			#prfile_save_name#,
+			#prfile_type#,
+			#prfile_size#,
+			'y',
+			sysdate)
+	</insert>
+	
+	<select id="fileInfo" parameterClass="map" resultClass="pr_fileVO">
+		SELECT *
+		FROM PROJECT_FILE
+		WHERE PR_NUM = #pr_num#
+		AND PRFILE_STATUS = 'y'	
+	</select>
+
+<!-- 	<select id="boardFileInfo" parameterClass="map" -->
+<!-- 		resultClass="portfolio_fileVO"> -->
+<!-- 		SELECT * -->
+<!-- 		FROM PORTFOLIO_FILE -->
+<!-- 		WHERE PO_NUM = #po_num# -->
+<!-- 		AND POFILE_STATUS = 'y' -->
+<!-- 	</select> -->
+	
+<!-- 	<update id="deleteFile" parameterClass="map"> -->
+<!-- 		UPDATE -->
+<!-- 		PORTFOLIO_FILE -->
+<!-- 		SET POFILE_STATUS = 'n' -->
+<!-- 		WHERE POFILE_NUM = -->
+<!-- 		#pofile_num# -->
+<!-- 	</update> -->
+	
+<!-- 	<select id="fileInfo" resultClass="portfolio_fileVO" parameterClass="map"> -->
+<!-- 		SELECT * -->
+<!-- 		FROM PORTFOLIO_FILE -->
+<!-- 		WHERE POFILE_NUM = #pofile_num# -->
+<!-- 	</select> -->
+</sqlMap>

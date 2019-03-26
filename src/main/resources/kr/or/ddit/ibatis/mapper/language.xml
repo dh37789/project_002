@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="language">
+	<typeAlias alias="languageVO" type="kr.or.ddit.vo.LanguageVO"/>
+	<typeAlias alias="projectVO" type="kr.or.ddit.vo.ProjectVO"/>
+<!-- 	<statement id="languageList" resultClass="languageVO"> -->
+<!-- 		SELECT *  -->
+<!-- 		FROM language -->
+<!-- 		WHERE LAN_NUM = #TECH_NUM# -->
+<!-- 	</statement> -->
+	
+	<select id="languageList" parameterClass="string" resultClass="languageVO">
+	select * 
+    from language l,project_tech t
+    where l.lan_num = t.tech_num
+    and t.project_num =#pr_num#
+	</select>
+
+	<select id="poTech" parameterClass="map" resultClass="string">
+	select lan_num
+	from language
+	where lan_name = #lan_name#
+	</select>
+	
+	<select id="poTechName" parameterClass="map" resultClass="string">
+		select lan_name
+		from language
+		where lan_num = #lan_num#
+	</select>
+	
+	<select id="lanList" resultClass="languageVO">
+		select *
+		from language
+	</select>
+	
+	<select id="repreTech" parameterClass="map" resultClass="languageVO">
+		SELECT LAN_NUM, LAN_NAME
+		FROM TECHNIQUE T INNER JOIN LANGUAGE L ON(T.TECH_TYPE = L.LAN_NUM)
+		WHERE MEM_ID = #mem_id#
+		AND TECH_REPRE='0'
+	</select>
+</sqlMap>

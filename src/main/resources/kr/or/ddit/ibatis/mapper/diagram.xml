@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="diagram">
+	<typeAlias alias="diagramVO" type="kr.or.ddit.vo.DiagramVO"/>
+	<insert id="insertDiagram" parameterClass="diagramVO"> 
+	<selectKey keyProperty="data_num" resultClass="String">
+		SELECT DIAGRAM_DATA_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO DIAGRAM_DATA(DATA_NUM, PR_NUM, DATA_DATA, OUTPUT_NUM
+		, MEM_ID, DATA_DATE, DATA_TITLE)
+		VALUES(#data_num#, #pr_num#, #data_data#, #output_num#
+		, #mem_id#, SYSDATE, #data_title#)
+	</insert>
+	
+	<sql id="searchCondition">
+		<!-- AND는 prepend="AND" 쿼리의 AND를 없애준다.(자동으로 붙여준다.) -->
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="title">
+						DATA_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	<select id="diagramList" parameterClass="map" resultClass="diagramVO">
+		SELECT B.*
+		FROM(SELECT ROWNUM rnum, A.*
+        FROM(SELECT * 
+		FROM DIAGRAM_DATA
+		WHERE OUTPUT_NUM = #output_num#
+		AND PR_NUM = #pr_num#
+		AND DATA_STATUS = 'y'
+		<include refid="searchCondition"/>
+		ORDER BY DATA_NUM ASC) A ) B
+        <![CDATA[
+		WHERE B.RNUM <= #startCount#
+		  AND B.RNUM >= #endCount#
+	   ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="diagramInfo" parameterClass="map" resultClass="diagramVO">
+		SELECT * 
+		FROM DIAGRAM_DATA
+		WHERE DATA_NUM = #data_num#
+	</select>
+	
+	<update id="updateDiagram">
+		UPDATE DIAGRAM_DATA
+		SET DATA_DATA = #data_data#,
+			DATA_DATE = SYSDATE,
+			MEM_ID = #mem_id#,
+			DATA_TITLE = #data_title#
+		WHERE DATA_NUM = #data_num#
+	</update>
+	
+	<update id="deleteDiagram" parameterClass="map">
+		UPDATE DIAGRAM_DATA
+		SET DATA_STATUS = 'n'
+		WHERE DATA_NUM = #data_num#
+	</update>
+	
+	<select id="diagramCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*) 
+		FROM DIAGRAM_DATA
+		WHERE OUTPUT_NUM = #output_num#
+		AND PR_NUM = #pr_num#
+		AND DATA_STATUS = 'y'
+		<include refid="searchCondition"/>
+	</select>
+</sqlMap>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="notice">
+	<typeAlias alias="noticeVO" type="kr.or.ddit.vo.NoticeVO"/>
+	
+	
+	
+	<sql id="selectAll">
+		SELECT * FROM NOTICE
+	</sql>
+	
+	<sql id="select">
+		SELECT * FROM NOTICE WHERE NO_STATUS = 'Y'
+	</sql>
+	
+	<sql id="searchCondition">
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="search_keyword" open="(" close=") and no_STATUS = 'y'">
+				<isEqual property="search_keycode" compareValue="TOTAL">
+						NO_TITLE LIKE '%'||#search_keyword#||'%'
+					 OR NO_CONTENT LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="TITLE">
+						NO_TITLE LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+				<isEqual property="search_keycode" compareValue="CONTENT">
+					    NO_CONTENT LIKE '%'||#search_keyword#||'%'
+				</isEqual>
+			</isNotEmpty>
+			<isEmpty  property="search_keyword" open="(" close=") and no_STATUS = 'y'">
+				NO_STATUS='y'
+			</isEmpty>
+		</dynamic>
+	</sql>
+	
+	<select id="noticeList" resultClass="noticeVO" parameterClass="map">
+		SELECT B.*
+		FROM
+		(SELECT ROWNUM rnum, A.*
+		  FROM (<include refid="selectAll"/>
+		  		<include refid="searchCondition"/>
+		  		ORDER BY NO_DATE)A
+		  		WHERE NO_STATUS = 'y') B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		  AND B.RNUM >= #endCount#
+		 ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	
+	<select id="noticeView"  parameterClass="map" resultClass="noticeVO">
+		<include refid="selectAll"/>
+		 WHERE NO_NUM = #no_num#
+	</select>
+	
+	<insert id="insertNotice" parameterClass="noticeVO">
+		<selectKey keyProperty="no_num" resultClass="String">
+			SELECT NOTICE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO 
+		notice(NO_NUM, NO_TITLE, NO_CONTENT,NO_DATE)
+		VALUES(#no_num#, #no_title#, #no_content#,SYSDATE)
+	</insert>
+	
+	<update id="updateNotice" parameterClass="noticeVO">
+		UPDATE notice
+		   SET
+		   	   NO_TITLE = #no_title#,
+		   	   NO_CONTENT = #no_content#
+		 WHERE NO_NUM = #no_num#
+	</update>
+	
+	<update id="deleteNotice" parameterClass="string">
+		UPDATE notice
+		   SET
+		   	   NO_STATUS = 'n'
+		 WHERE NO_NUM = #no_num#
+	</update>
+	
+	<update id="noticeHit" parameterClass="map">
+		UPDATE notice
+		   SET
+		   	   NO_HIT = NO_HIT+1
+		 WHERE NO_NUM = #no_num#	
+	</update>
+	
+	<select id="totalCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(NO_NUM)
+		  FROM notice
+		 <include refid="searchCondition"/>
+
+	</select>
+</sqlMap>

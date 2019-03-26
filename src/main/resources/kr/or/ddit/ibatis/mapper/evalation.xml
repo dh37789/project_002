@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="evalation">
+	<typeAlias alias="evalationVO" type="kr.or.ddit.vo.EvalationVO"/>
+	
+<!-- 	<select id="portfolioList" parameterClass="map" resultClass="portfolio_file_joinVO"> -->
+<!-- 		SELECT *  -->
+<!-- 	        FROM PORTFOLIO P -->
+<!-- 	        LEFT OUTER JOIN PORTFOLIO_FILE F ON P.PO_NUM = F.PO_NUM -->
+<!-- 	        WHERE PO_STATUS = 'y' -->
+<!-- 	        AND MEM_ID = #mem_id# -->
+<!-- 	</select> -->
+	
+<!-- 	<select id="portfolioInfo" parameterClass="map" resultClass="portfolioVO"> -->
+<!-- 		SELECT *  -->
+<!-- 	        FROM PORTFOLIO -->
+<!-- 	        WHERE MEM_ID = #mem_id# -->
+<!-- 	        AND PO_NUM = #po_num# -->
+<!-- 	</select> -->
+	
+<!-- 	<select id="portfolioInfoJoin" parameterClass="map" resultClass="portfolio_file_joinVO"> -->
+<!-- 		SELECT *  -->
+<!-- 	        FROM PORTFOLIO P -->
+<!-- 	        LEFT OUTER JOIN PORTFOLIO_FILE F ON P.PO_NUM = F.PO_NUM -->
+<!-- 	        WHERE P.PO_NUM = #po_num# -->
+<!-- 	</select> -->
+	
+<!-- 	<update id="updatePortfolio" parameterClass="portfolioVO"> -->
+<!-- 		UPDATE PORTFOLIO -->
+<!-- 		   SET PO_TITLE = #po_title# -->
+<!-- 		      ,PO_CATE_NUM = #po_cate_num# -->
+<!-- 		   	  ,PO_CONTENT = #po_content# -->
+<!-- 		   	  ,PO_START = #po_start# -->
+<!-- 		   	  ,PO_END = #po_end# -->
+<!-- 		   	  ,PO_TECH = #po_tech# -->
+<!-- 		   	  ,PO_PERCENT = #po_percent# -->
+<!-- 		   	  ,PO_EXPLAINFILE = #po_explainfile# -->
+<!-- 		   	  ,PART_NUM = #part_num# -->
+<!-- 		   	  <dynamic> -->
+<!-- 				<isNotEmpty property="pr_num"> -->
+<!-- 				  ,PR_NUM = #pr_num#  -->
+<!-- 				</isNotEmpty> -->
+<!-- 			  </dynamic> -->
+<!-- 		WHERE PO_NUM = #po_num#  -->
+<!-- 		AND MEM_ID = #mem_id# -->
+<!-- 	</update> -->
+	
+	<insert id="insertEvalation" parameterClass="evalationVO">
+			<selectKey keyProperty="ev_num" resultClass="String">
+			SELECT EVALATION_SEQ.NEXTVAL FROM DUAL
+			</selectKey>
+		INSERT INTO EVALATION(ev_num, ev_from, ev_to, cons_num, ev_professione, ev_satisfy,
+				ev_communi, ev_schedule, ev_active, ev_content)
+		VALUES(#ev_num#, #ev_from#, #ev_to#, #cons_num#, #ev_professione#, #ev_satisfy#,
+				#ev_communi#, #ev_schedule#, #ev_active#, #ev_content#)					  
+	
+	</insert>
+	
+	<select id="evalAvgPro" parameterClass="map" resultClass="java.lang.Double">
+		SELECT SUBSTR(AVG(EV_PROFESSIONE),1,3)
+	       FROM EVALATION
+	       WHERE EV_TO = #ev_to#
+	</select>
+	
+	<select id="evalAvgSati" parameterClass="map" resultClass="java.lang.Double">
+		SELECT SUBSTR(AVG(EV_SATISFY),1,3)
+	       FROM EVALATION
+	       WHERE EV_TO = #ev_to#
+	</select>
+	
+	<select id="evalAvgComm" parameterClass="map" resultClass="java.lang.Double">
+		SELECT SUBSTR(AVG(EV_COMMUNI),1,3)
+	       FROM EVALATION
+	       WHERE EV_TO = #ev_to#
+	</select>
+	
+	<select id="evalAvgSche" parameterClass="map" resultClass="java.lang.Double">
+		SELECT SUBSTR(AVG(EV_SCHEDULE),1,3)
+	       FROM EVALATION
+	       WHERE EV_TO = #ev_to#
+	</select>
+	
+	<select id="evalAvgActi" parameterClass="map" resultClass="java.lang.Double">
+		SELECT SUBSTR(AVG(EV_ACTIVE),1,3)
+	       FROM EVALATION
+	       WHERE EV_TO = #ev_to#
+	</select>
+	
+	<select id="countEval" parameterClass="map" resultClass="int">
+		SELECT NVL(COUNT(*), 0)
+	       FROM EVALATION
+	       WHERE EV_TO = #ev_to#
+	</select>
+	
+	<select id="evalTotalSum" parameterClass="map" resultClass="int">
+		SELECT SUM(EV_PROFESSIONE + EV_SATISFY + EV_COMMUNI + EV_SCHEDULE + EV_ACTIVE)
+	       FROM EVALATION
+	       WHERE EV_TO = #ev_to#
+	</select>
+	
+	<!-- 	<update id="deletePortfolio" parameterClass="map"> -->
+<!-- 		UPDATE PORTFOLIO -->
+<!-- 		   SET PO_STATUS = 'n' -->
+<!-- 		WHERE MEM_ID = #mem_id# -->
+<!-- 		AND PO_NUM = #po_num# -->
+<!-- 	</update> -->
+		   
+<!-- 	<update id="updateRepre" parameterClass="map"> -->
+<!-- 		UPDATE PORTFOLIO -->
+<!-- 		   SET PO_REPRE = '0' -->
+<!-- 		WHERE PO_NUM = #po_num# -->
+<!-- 		WHERE MEM_ID = #mem_id# -->
+<!-- 	</update> -->
+	
+<!-- 	<update id="updateTotalRepre" parameterClass="map"> -->
+<!-- 		UPDATE PORTFOLIO -->
+<!-- 		   SET PO_REPRE = '1' -->
+<!-- 		WHERE MEM_ID = #mem_id# -->
+<!-- 	</update> -->
+	
+<!-- 	<select id="checkRepre" parameterClass="map" resultClass="portfolioVO"> -->
+<!-- 		SELECT * FROM PORTFOLIO -->
+<!-- 			WHERE MEM_ID = #mem_id# -->
+<!-- 		AND PO_REPRE = '0' -->
+<!-- 	</select> -->
+	
+</sqlMap>

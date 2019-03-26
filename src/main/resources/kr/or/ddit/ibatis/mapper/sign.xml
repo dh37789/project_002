@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="sign">
+	<typeAlias alias="signVO" type="kr.or.ddit.vo.SignVO"/>
+	<select id="signInfo" parameterClass="map" resultClass="signVO">
+		SELECT *
+		FROM SIGN
+		WHERE MEM_ID = #mem_id#
+		AND SIGN_STATUS = 'y'
+        AND SIGN_TYPE = '1'
+	</select>
+	
+	<insert id="insertSign" parameterClass="signVO">
+	<selectKey keyProperty="sign_num">
+		SELECT SIGN_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO SIGN(SIGN_NUM,MEM_ID,SIGN_SAVE_NAME,SIGN_DATE,SIGN_TYPE)
+		VALUES(#sign_num#,#mem_id#,#sign_save_name#,SYSDATE,'0')
+	</insert>
+	<insert id="insertFirstSign" parameterClass="signVO">
+	<selectKey keyProperty="sign_num">
+		SELECT SIGN_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO SIGN(SIGN_NUM,MEM_ID,SIGN_SAVE_NAME,SIGN_DATE,SIGN_TYPE)
+		VALUES(#sign_num#,#mem_id#,#sign_save_name#,SYSDATE,'1')
+	</insert>
+	<select id="signList" parameterClass="map" resultClass="signVO">
+		SELECT *
+		FROM SIGN
+		WHERE MEM_ID = #mem_id#
+		AND SIGN_STATUS = 'y'
+		ORDER BY SIGN_NUM ASC
+	</select>
+	<select id="countSign" parameterClass="map" resultClass="int">
+		SELECT COUNT(*)
+		FROM SIGN
+		WHERE MEM_ID = #mem_id#
+		AND SIGN_STATUS = 'y'
+	</select>
+	<update id="deleteSign" parameterClass="map">
+		UPDATE SIGN
+		SET SIGN_STATUS = 'n'
+		WHERE SIGN_NUM = #sign_num#
+	</update>
+	<update id="resetSign">
+		UPDATE SIGN
+		SET SIGN_TYPE = '0'
+		WHERE MEM_ID = #mem_id#
+		AND SIGN_STATUS = 'y'
+	</update>
+	<update id="representSign">
+		UPDATE SIGN
+		SET SIGN_TYPE = '1'
+		WHERE SIGN_NUM = #sign_num#
+	</update>
+</sqlMap>

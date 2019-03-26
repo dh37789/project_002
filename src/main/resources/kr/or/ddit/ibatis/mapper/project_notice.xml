@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="project_notice">
+	<typeAlias alias="project_noticeVO" type="kr.or.ddit.vo.Project_noticeVO"/>
+	<sql id="project_notice_sql">
+		SELECT * FROM PROJECT_NOTICE
+	</sql>
+	<sql id="searchCondition">
+		<!-- AND는 prepend="AND" 쿼리의 AND를 없애준다.(자동으로 붙여준다.) -->
+		<dynamic prepend="AND">
+		<!-- AND가 참일시 isNotEmpty에서 (를 열어서 AND부분을 묶어준다.) -->
+			<isNotEmpty property="search_data" open="(" close=")">
+				<isEqual property="search_code" compareValue="total">
+						PRNO_TITLE LIKE '%'||#search_data#||'%'
+					OR 	PRNO_WRITER LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="title">
+						PRNO_TITLE LIKE '%'||#search_data#||'%'
+				</isEqual>
+				<isEqual property="search_code" compareValue="writer">
+					 	PRNO_WRITER LIKE '%'||#search_data#||'%'
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<select id="boardList" parameterClass="map" resultClass="project_noticeVO">
+		SELECT B.*
+		FROM (SELECT ROWNUM rnum, A.*
+        FROM(<include refid="project_notice_sql"/>
+		WHERE PR_NUM = #pr_num#
+		AND PRNO_STATUS = 'y'
+		<include refid="searchCondition"/>
+		ORDER BY PRNO_NUM ASC) A) B
+		<![CDATA[
+		WHERE B.RNUM <= #startCount#
+		  AND B.RNUM >= #endCount#
+	   ]]>
+		ORDER BY B.RNUM DESC
+	</select>
+	<insert id="insertNtc" parameterClass="project_noticeVO">
+		<selectKey keyProperty="prno_num" resultClass="String">
+			SELECT PROJECT_NOTICE_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+			INSERT INTO PROJECT_NOTICE(PRNO_NUM, PR_NUM, PRNO_WRITER, PRNO_DATE,
+			                      PRNO_TITLE, PRNO_CONTENT)
+            VALUES(#prno_num#, #pr_num#, #prno_writer#, SYSDATE,
+           			#prno_title#, #prno_content#)
+	</insert>
+	<select id="boardInfo" parameterClass="map" resultClass="project_noticeVO">
+		<include refid="project_notice_sql"/>
+		WHERE PRNO_NUM = #prno_num#
+	</select>
+	<update id="deleteNtc" parameterClass="map">
+		UPDATE PROJECT_NOTICE
+		SET PRNO_STATUS = 'n'
+		WHERE PRNO_NUM = #prno_num#
+	</update>
+	<update id="updateNtc" parameterClass="project_noticeVO">
+		UPDATE PROJECT_NOTICE
+		SET PRNO_TITLE = #prno_title#,
+		    PRNO_CONTENT = #prno_content#
+		WHERE PRNO_NUM = #prno_num#
+	</update>
+	<select id="boardCount" parameterClass="map" resultClass="int">
+		SELECT COUNT(*) 
+		FROM PROJECT_NOTICE
+		WHERE PR_NUM = #pr_num#
+		AND PRNO_STATUS = 'y'
+		<include refid="searchCondition"/>
+	</select>
+</sqlMap>

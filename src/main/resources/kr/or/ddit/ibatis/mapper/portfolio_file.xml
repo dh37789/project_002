@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="portfolio_file"><typeAlias alias="portfolio_fileVO" type="kr.or.ddit.vo.Portfolio_fileVO"/>
+
+<statement id="fileItemList" resultClass="portfolio_fileVO">
+		SELECT *
+		 FROM PORTFOLIO_FILE
+		WHERE POFILE_STATUS = 'y'
+	</statement>
+
+<insert id="insertFile" parameterClass="portfolio_fileVO">
+	<selectKey keyProperty="pofile_num">
+			SELECT
+			PORTFOLIO_FILE_SEQ.NEXTVAL FROM DUAL
+	</selectKey>
+		INSERT INTO PORTFOLIO_FILE(
+		POFILE_NUM,
+		PO_NUM,
+		POFILE_FILE_NAME,
+		POFILE_SAVE_NAME,
+		POFILE_TYPE,
+		POFILE_SIZE,
+		POFILE_DATE,
+		POFILE_STATUS)
+		VALUES(
+		#pofile_num#,
+		#po_num#,
+		#pofile_file_name#,
+		#pofile_save_name#,
+		#pofile_type#,
+		#pofile_size#,
+		SYSDATE,
+		'y')
+</insert>
+
+	<select id="boardFileInfo" parameterClass="map"
+		resultClass="portfolio_fileVO">
+		SELECT *
+		FROM PORTFOLIO_FILE
+		WHERE PO_NUM = #po_num#
+		AND POFILE_STATUS = 'y'
+	</select>
+	
+	<update id="deleteFile" parameterClass="map">
+		UPDATE
+		PORTFOLIO_FILE
+		SET POFILE_STATUS = 'n'
+		WHERE POFILE_NUM =
+		#pofile_num#
+	</update>
+	
+	<select id="fileInfo" resultClass="portfolio_fileVO" parameterClass="map">
+		SELECT *
+		FROM PORTFOLIO_FILE
+		WHERE POFILE_NUM = #pofile_num#
+	</select>
+</sqlMap>
